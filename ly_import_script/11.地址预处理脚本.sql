@@ -3,11 +3,53 @@ DROP TABLE import_addressen;
 CREATE TABLE import_addressen AS
 SELECT *
   FROM lyboss.address_tree a
+-- 在地址数中不需要拆分的地址
  WHERE NOT EXISTS (SELECT 'x'
           FROM lyboss.splitted_address t
          WHERE t.address_id = a.address_id)
 UNION
-SELECT *
+SELECT t.parent_address_id || t.address_name_en address_id,
+       t.parent_address_id,
+       0 list_order,
+       '' address_name_en,
+       t.address_name_en address_name,
+       '' leaf,
+       '' organ_code,
+       '' adr_code,
+       '' num,
+       '' buildings_num,
+       '' danyuan_num,
+       '' floor,
+       '' door,
+       '' allnums,
+       '' son_front_port_id,
+       '' exchange_machine_id,
+       '' light_node_id,
+       '' address_name_py
+-- 拆分后所有上级地址
+  FROM lyboss.splitted_address t
+ GROUP BY t.parent_address_id, t.address_name_en
+UNION
+SELECT s.address_id,
+       -- 上级地址为当 前上级地址||拆分后上级地址名称 
+       s.parent_address_id || s.address_name_en parent_address_id,
+       s.list_order,
+       s.address_name_en,
+       s.leaf address_name,
+       s.leaf,
+       s.organ_code,
+       s.adr_code,
+       s.num,
+       s.buildings_num,
+       s.danyuan_num,
+       s.floor,
+       s.door,
+       s.allnums,
+       s.son_front_port_id,
+       s.exchange_machine_id,
+       s.light_node_id,
+       s.address_name_py
+-- 拆分后的所有下级地址
   FROM lyboss.splitted_address s;
 -- 主键增加索引
 CREATE INDEX index_ia_id ON import_addressen(address_id);
