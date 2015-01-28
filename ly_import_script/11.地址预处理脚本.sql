@@ -1,12 +1,14 @@
 -- 提取有效的地址 
-/*DROP TABLE import_addressen;
-CREATE TABLE import_addressen AS*/
+DROP TABLE import_addressen;
+CREATE TABLE import_addressen AS
 SELECT *
   FROM lyboss.address_tree a
- WHERE a.organ_code NOT LIKE '@@LY%'
+ WHERE NOT EXISTS (SELECT 'x'
+          FROM lyboss.splitted_address t
+         WHERE t.address_id = a.address_id)
 UNION
 SELECT *
-  FROM lyboss.splitted_address_tree s;
+  FROM lyboss.splitted_address s;
 -- 主键增加索引
 CREATE INDEX index_ia_id ON import_addressen(address_id);
 -- 增加地址等级字段
