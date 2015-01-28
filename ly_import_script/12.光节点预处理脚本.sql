@@ -7,13 +7,13 @@ SELECT *
    AND a.addresslevelid_pk IN (4, 5);
 -- 主键增加索引
 CREATE INDEX index_ir_id ON import_raynode(address_id);
--- 增加光节点等级字段
+-- 增加光节点等级字段，预处理时更新
 ALTER TABLE import_raynode add raynodelevelid_pk NUMBER(5);
--- 增加starboss中的上级光节点id
-ALTER TABLE import_raynode add raynodeid_fk NUMBER(19);
--- 增加光节点等级长度
+-- 增加光节点等级长度，预处理时更新
 ALTER TABLE import_raynode add raynode_level_code_length NUMBER(1);
--- 增加上级光节点全称编码
+-- 增加starboss中的上级光节点id，导入光节点时回写
+ALTER TABLE import_raynode add raynodeid_fk NUMBER(19);
+-- 增加上级光节点全称编码，导入光节点时回写
 ALTER TABLE import_raynode add raynode_parent_full_name_code VARCHAR2(1024);
 
 

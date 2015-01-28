@@ -53,17 +53,17 @@ SELECT s.address_id,
   FROM lyboss.splitted_address s;
 -- 主键增加索引
 CREATE INDEX index_ia_id ON import_addressen(address_id);
--- 增加地址等级字段
+-- 增加地址等级字段，预处理时更新
 ALTER TABLE import_addressen add addresslevelid_pk NUMBER(5);
--- 增加starboss中的上级地址id
-ALTER TABLE import_addressen add addressid_fk NUMBER(19);
--- 增加地址等级长度
+-- 增加地址等级长度，预处理时更新
 ALTER TABLE import_addressen add add_level_code_length NUMBER(1);
--- 增加上级地址全称编码
+-- 增加starboss中的上级地址id，导入地址时回写
+ALTER TABLE import_addressen add addressid_fk NUMBER(19);
+-- 增加上级地址全称编码，导入地址时回写
 ALTER TABLE import_addressen add parent_full_name_code VARCHAR2(1024);
--- 增加上级地址全称
+-- 增加上级地址全称，导入地址时回写
 ALTER TABLE import_addressen add parent_full_name VARCHAR2(1024);
--- 增加对应starboss中地址的id
+-- 增加对应starboss中地址的id，导入地址时回写
 ALTER TABLE import_addressen add addressid_pk NUMBER(19);
 
 -- 修改第二级地址 辽阳地区 的信息
