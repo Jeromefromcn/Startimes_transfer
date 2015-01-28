@@ -2,7 +2,7 @@ CREATE OR REPLACE PACKAGE "TRANSFER_DVB_UTILS_PKG" IS
 
   -- Author  : JEROME
   -- Created : 2014/7/4 10:37:34 AM
-  -- Purpose : 
+  -- Purpose :  
 
   sql_code VARCHAR2(50);
 
