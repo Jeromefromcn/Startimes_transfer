@@ -1,11 +1,11 @@
 -- 创建p1表 
 DROP TABLE temp_places1;
 CREATE TABLE temp_places1 AS
-SELECT hugeboss.get_strarraystrofindex(sys_connect_by_path(p.id, '>'), '>', 1) cid,
+SELECT get_strarraystrofindex@fsboss(sys_connect_by_path(p.id, '>'), '>', 1) cid,
        p.id,
        p.operationroleid,
        p.endlifecycle
-  FROM hugeboss.places p
+  FROM places@fsboss p
  START WITH p.parentid IS NOT NULL
 CONNECT BY PRIOR p.parentid = p.id;
 -- 增加索引
@@ -16,7 +16,7 @@ CREATE INDEX index_places1_3 ON temp_places1(cid);
 DROP TABLE temp_places2;
 CREATE TABLE temp_places2 AS
 SELECT pa1.operationroleid, pa2.id, pa2.code, pa2.endlifecycle, pa2.name
-  FROM hugeboss.places pa1, hugeboss.places pa2
+  FROM places@fsboss pa1, places@fsboss pa2
  WHERE pa1.parentid IS NULL
    AND pa2.parentid = pa1.id;
 -- 增加索引
@@ -44,17 +44,17 @@ SELECT pd.*,
        202 equiptypeid -- 设备类型
   FROM temp_places1                       p1,
        temp_places2                       p2,
-       hugeboss.manageaddresses_fs          m,
-       hugeboss.customers_fs                c,
-       hugeboss.products_fs                 pd,
-       hugeboss.productofferingattributes   poa,
-       hugeboss.simpletypes                 pos,
-       hugeboss.terminals_fs                t,
-       hugeboss.terminalspecifications      ts,
-       hugeboss.smartcards_fs               sc,
-       hugeboss.productphysicalresources_fs ppr,
-       hugeboss.products_fs                 scpd,
-       hugeboss.employee_organizationunit   eu
+       manageaddresses_fs@fsboss          m,
+       customers_fs@fsboss                c,
+       products_fs@fsboss                 pd,
+       productofferingattributes@fsboss   poa,
+       simpletypes@fsboss                 pos,
+       terminals_fs@fsboss                t,
+       terminalspecifications@fsboss      ts,
+       smartcards_fs@fsboss               sc,
+       productphysicalresources_fs@fsboss ppr,
+       products_fs@fsboss                 scpd,
+       employee_organizationunit@fsboss   eu
  WHERE p1.operationroleid = p2.operationroleid
    AND p1.id = p2.id
    AND m.managesectionid = p1.cid
@@ -89,13 +89,13 @@ SELECT pd.*,
        1045 subscriber_tpye, -- 模拟普通用户类型
        1 authenticationtypeid, -- 模拟认证方式
        NULL equiptypeid -- 设备类型
-  FROM hugeboss.products_fs               pd, -- 汇巨系统产品订购表
-       hugeboss.productofferings          po,
-       hugeboss.productofferingattributes poatt,
-       hugeboss.simpletypes               poatts,
-       hugeboss.customers_fs              c, --汇巨系统客户表
-       hugeboss.terminals_fs              t,
-       hugeboss.employee_organizationunit eu -- 受理人记录
+  FROM products_fs@fsboss               pd, -- 汇巨系统产品订购表
+       productofferings@fsboss          po,
+       productofferingattributes@fsboss poatt,
+       simpletypes@fsboss               poatts,
+       customers_fs@fsboss              c, --汇巨系统客户表
+       terminals_fs@fsboss             t,
+       employee_organizationunit@fsboss eu -- 受理人记录
  WHERE pd.customerid = c.id
    AND c.defaultinstalladdressid IS NOT NULL --没有门址的客户不导入
    AND pd.productofferingid = po.id
@@ -125,16 +125,16 @@ SELECT pd.*,
        3045 subscriber_tpye, -- 宽带普通用户类型
        3 authenticationtypeid, -- 宽带认证方式
        NULL equiptypeid -- 设备类型
-  FROM hugeboss.customers_fs              c, --汇巨系统客户表
-       hugeboss.products_fs               pd, --汇巨系统产品订购表
-       hugeboss.productofferings          po, --汇巨系统产品表
-       hugeboss.productofferingattributes poatt, --汇巨系统产品类型表
-       hugeboss.simpletypes               poatts, --汇巨系统产品类型表2
-       hugeboss.productservices_fs        pf, --汇巨系统产品服务表
-       hugeboss.userservices_fs           uf, --汇巨系统用户订购服务表
-       hugeboss.users_fs                  users, --汇巨系统用户表，记录用户宽带账号
-       hugeboss.employee_organizationunit eu, -- 受理人记录
-       hugeboss.terminals_fs              t
+  FROM customers_fs@fsboss              c, --汇巨系统客户表
+       products_fs@fsboss               pd, --汇巨系统产品订购表
+       productofferings@fsboss          po, --汇巨系统产品表
+       productofferingattributes@fsboss poatt, --汇巨系统产品类型表
+       simpletypes@fsboss               poatts, --汇巨系统产品类型表2
+       productservices_fs@fsboss        pf, --汇巨系统产品服务表
+       userservices_fs@fsboss           uf, --汇巨系统用户订购服务表
+       users_fs@fsboss                  users, --汇巨系统用户表，记录用户宽带账号
+       employee_organizationunit@fsboss eu, -- 受理人记录
+       terminals_fs@fsboss              t
  WHERE pd.statusid IN (3601, 3602, 3604, 3605, 3612)
    AND pd.productofferingid = po.id
    AND po.id = poatt.productofferingid
@@ -165,13 +165,13 @@ SELECT pd.*,
        3045 subscriber_tpye, -- 宽带普通用户类型
        3 authenticationtypeid, -- 宽带认证方式
        NULL equiptypeid -- 设备类型
-  FROM hugeboss.customers_fs              c, --汇巨系统客户表
-       hugeboss.products_fs               pd, --汇巨系统产品订购表
-       hugeboss.productofferings          po, --汇巨系统产品表
-       hugeboss.productofferingattributes poatt, --汇巨系统产品类型表
-       hugeboss.simpletypes               poatts,
-       hugeboss.employee_organizationunit eu, --受理人
-       hugeboss.terminals_fs              t
+  FROM customers_fs@fsboss              c, --汇巨系统客户表
+       products_fs@fsboss               pd, --汇巨系统产品订购表
+       productofferings@fsboss          po, --汇巨系统产品表
+       productofferingattributes@fsboss poatt, --汇巨系统产品类型表
+       simpletypes@fsboss               poatts,
+       employee_organizationunit@fsboss eu, --受理人
+       terminals_fs@fsboss              t
  WHERE pd.statusid IN (3601, 3602, 3604, 3605, 3612)
    AND pd.productofferingid = po.id
    AND po.id = poatt.productofferingid
@@ -182,13 +182,12 @@ SELECT pd.*,
    AND pd.terminalid = t.id
    AND c.defaultinstalladdressid IS NOT NULL
    AND NOT EXISTS (SELECT 'x'
-          FROM hugeboss.productservices_fs pf
+          FROM productservices_fs@fsboss pf
          WHERE pf.productid = pd.id);
          
 -- 增加索引
 CREATE INDEX index_subscriber_1 ON fsboss_subscriber(ID);
 CREATE INDEX index_subscriber_2 ON fsboss_subscriber(customerid);
-
 
 --删除重复terminalid中，status为3612的用户
 DELETE fsboss_subscriber dfs
@@ -200,15 +199,4 @@ DELETE fsboss_subscriber dfs
                  WHERE fd.terminalid = fs.terminalid
                    AND fd.servicestr <> fs.servicestr))
    AND dfs.statusid = 3612;
-
-
-
-
-
-
 COMMIT;
-
-
-
-
-

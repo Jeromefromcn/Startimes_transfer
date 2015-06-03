@@ -4,7 +4,7 @@ ALTER TABLE MUROTOEN MODIFY (mem Varchar2(150))
 DROP TABLE fsboss_manageaddresses_fs;
 CREATE TABLE fsboss_manageaddresses_fs AS
 SELECT t.*, t.name originalname, 0 isformated
-  FROM hugeboss.manageaddresses_fs t, fsboss_places p
+  FROM manageaddresses_fs@fsboss t, fsboss_places p
  WHERE t.managesectionid = p.id;
  
  -- 增加单元参数
@@ -31,31 +31,31 @@ CREATE INDEX index_fsboss_conncode ON fsboss_manageaddresses_fs(connectioncode);
 DROP TABLE temp_manageaddresses_fs;
 CREATE TABLE temp_manageaddresses_fs AS
 SELECT t.id, t.name
-  FROM hugeboss.manageaddresses_fs t
+  FROM manageaddresses_fs@fsboss t
  WHERE regexp_like(t.name, '^[0-9]-[0-9]{3}$')
 
 UNION
 
 SELECT t.id, t.name
-  FROM hugeboss.manageaddresses_fs t
+  FROM manageaddresses_fs@fsboss t
  WHERE regexp_like(t.name, '^[0-9]-[0-9]{4}$')
 
 UNION
 
 SELECT t.id, t.name
-  FROM hugeboss.manageaddresses_fs t
+  FROM manageaddresses_fs@fsboss t
  WHERE regexp_like(t.name, '^[0-9]{2}-[0-9]{3}$')
 
 UNION
 
 SELECT t.id, t.name
-  FROM hugeboss.manageaddresses_fs t
+  FROM manageaddresses_fs@fsboss t
  WHERE regexp_like(t.name, '^[0-9]{2}-[0-9]{4}$')
 
 UNION
 
 SELECT t.id, regexp_substr(t.name, '[0-9]-[0-9]{3}')
-  FROM hugeboss.manageaddresses_fs t
+  FROM manageaddresses_fs@fsboss t
  WHERE regexp_like(t.name, '.*\D[0-9]-[0-9]{3}$')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -65,7 +65,7 @@ SELECT t.id, regexp_substr(t.name, '[0-9]-[0-9]{3}')
 UNION
 
 SELECT t.id, regexp_substr(t.name, '[0-9]-[0-9]{3}')
-  FROM hugeboss.manageaddresses_fs t
+  FROM manageaddresses_fs@fsboss t
  WHERE regexp_like(t.name, '^[0-9]-[0-9]{3}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -141,36 +141,36 @@ AND t.murotonum > 10;
 SELECT SUM( t.unitnum*t.floornum*t.murotonum) from temp_building_parameters t*/
 -- 查询门址总数
 /*SELECT 0 序号, '门址总数' 类型, '' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
 
 UNION
 
 SELECT 1 序号, '^[0-9]-[0-9]{3}$' 类型, '1-101' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]-[0-9]{3}$')
 
 UNION
 
 SELECT 2 序号, '^[0-9]-[0-9]{4}$' 类型, '1-1101' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]-[0-9]{4}$')
 
 UNION
 
 SELECT 3 序号, '^[0-9]{2}-[0-9]{3}$' 类型, '11-101' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]{2}-[0-9]{3}$')
 
 UNION
 
 SELECT 4 序号, '^[0-9]{2}-[0-9]{4}$' 类型, '11-1101' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]{2}-[0-9]{4}$')
 
 UNION
 
 SELECT 5 序号, '.*\D[0-9]-[0-9]{3}$' 类型, '南楼3-302' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]-[0-9]{3}$')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -180,7 +180,7 @@ SELECT 5 序号, '.*\D[0-9]-[0-9]{3}$' 类型, '南楼3-302' 例子, COUNT(*) 数量
 UNION
 
 SELECT 6 序号, '^[0-9]-[0-9]{3}\D.*' 类型, '9-802(1)' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]-[0-9]{3}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -193,7 +193,7 @@ SELECT 7 序号,
        '.*\D[0-9]-[0-9]{3}\D.*' 类型,
        '着火楼-4-4-202-2' 例子,
        COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]-[0-9]{3}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -206,7 +206,7 @@ SELECT 8 序号,
        '.*\D[0-9]-[0-9]{4}$' 类型,
        '永宁街北段6#(北台SOHO)2-1907' 例子,
        COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]-[0-9]{4}$')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 1
@@ -216,7 +216,7 @@ SELECT 8 序号,
 UNION
 
 SELECT 9 序号, '^[0-9]-[0-9]{4}\D.*' 类型, '6-1502-1' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]-[0-9]{4}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 1
@@ -229,7 +229,7 @@ SELECT 10 序号,
        '.*\D[0-9]-[0-9]{4}\D.*' 类型,
        '永宁街北段6甲(北台SOHOA座B区2-1403)' 例子,
        COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]-[0-9]{4}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 1
@@ -242,7 +242,7 @@ SELECT 11 序号,
        '.*\D[0-9]{2}-[0-9]{3}$' 类型,
        '迎宾路90方块10-201' 例子,
        COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]{2}-[0-9]{3}$')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -255,7 +255,7 @@ SELECT 12 序号,
        '^[0-9]{2}-[0-9]{3}\D.*' 类型,
        '10-101(1)' 例子,
        COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]{2}-[0-9]{3}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -265,7 +265,7 @@ SELECT 12 序号,
 UNION
 
 SELECT 13 序号, '.*\D[0-9]{2}-[0-9]{3}\D.*' 类型, '' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]{2}-[0-9]{3}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 0
@@ -275,7 +275,7 @@ SELECT 13 序号, '.*\D[0-9]{2}-[0-9]{3}\D.*' 类型, '' 例子, COUNT(*) 数量
 UNION
 
 SELECT 14 序号, '.*\D[0-9]{2}-[0-9]{4}$' 类型, '' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]{2}-[0-9]{4}$')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 1
@@ -285,7 +285,7 @@ SELECT 14 序号, '.*\D[0-9]{2}-[0-9]{4}$' 类型, '' 例子, COUNT(*) 数量
 UNION
 
 SELECT 15 序号, '^[0-9]{2}-[0-9]{4}\D.*' 类型, '' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '^[0-9]{2}-[0-9]{4}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 1
@@ -295,7 +295,7 @@ SELECT 15 序号, '^[0-9]{2}-[0-9]{4}\D.*' 类型, '' 例子, COUNT(*) 数量
 UNION
 
 SELECT 16 序号, '.*\D[0-9]{2}-[0-9]{4}\D.*' 类型, '' 例子, COUNT(*) 数量
-  FROM hugeboss.manageaddresses_fs t
+  FROM fsboss.manageaddresses_fs t
  WHERE regexp_like(t.name, '.*\D[0-9]{2}-[0-9]{4}\D.*')
    AND regexp_count(t.name, '[0-9]-[0-9]{3}') = 1
    AND regexp_count(t.name, '[0-9]-[0-9]{4}') = 1

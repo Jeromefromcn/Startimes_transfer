@@ -2,7 +2,7 @@
  DROP TABLE fsboss_places;
  CREATE TABLE fsboss_places AS
 SELECT *
-  FROM hugeboss.places p
+  FROM places@fsboss p
  WHERE p.endlifecycle =
        to_date('9999/12/31 23:59:59', 'yyyy/MM/dd hh24:mi:ss');
 -- 主键增加索引

@@ -50,7 +50,7 @@ CREATE OR REPLACE PACKAGE BODY "TRANSFER_DVB_UTILS_PKG" IS
       SELECT bt.newid newid
         FROM basedata_transfer bt
        WHERE bt.oldid = p_old_baseid
-         AND bt.date_type = p_data_type;
+         AND bt.data_type = p_data_type;
   BEGIN
     v_new_baseid := '0';
     BEGIN

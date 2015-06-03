@@ -24,12 +24,11 @@
        t.warranty,
        1                         equiptype, -- ÖÇÄÜ¿¨
        tt.providerid             providerid,
-	  
        pe.keeperid               keeperid
-  FROM hugeboss.smartcards_fs                 t,
-       hugeboss.smartcardspecifications       tt,
-       hugeboss.physicalresourceentryitems_fs pi,
-       hugeboss.physicalresourceentries_fs    pe
+  FROM smartcards_fs@fsboss                 t,
+       smartcardspecifications@fsboss       tt,
+       physicalresourceentryitems_fs@fsboss pi,
+       physicalresourceentries_fs@fsboss    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id
@@ -57,12 +56,11 @@ SELECT t.id,
        t.warranty,
        2                         equiptype, -- »ú¶¥ºÐ
        tt.providerid             providerid,
-	  
        pe.keeperid               keeperid
-  FROM hugeboss.settopboxs_fs                 t,
-       hugeboss.settopboxspecifications       tt,
-       hugeboss.physicalresourceentryitems_fs pi,
-       hugeboss.physicalresourceentries_fs    pe
+  FROM settopboxs_fs@fsboss                 t,
+       settopboxspecifications@fsboss       tt,
+       physicalresourceentryitems_fs@fsboss pi,
+       physicalresourceentries_fs@fsboss    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id
@@ -90,12 +88,11 @@ SELECT t.id,
        NULL                      warranty,
        9                         equiptype, -- EOC
        tt.providerid             providerid,
-	   
        pe.keeperid               keeperid
-  FROM hugeboss.eocs_fs                       t,
-       hugeboss.eocspecifications             tt,
-       hugeboss.physicalresourceentryitems_fs pi,
-       hugeboss.physicalresourceentries_fs    pe
+  FROM eocs_fs@fsboss                      t,
+       eocspecifications@fsboss             tt,
+       physicalresourceentryitems_fs@fsboss pi,
+       physicalresourceentries_fs@fsboss    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id);

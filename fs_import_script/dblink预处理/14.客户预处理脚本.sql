@@ -11,9 +11,9 @@ CREATE TABLE fsboss_customer AS
 SELECT t.*,
        ma.managesectionid  managesectionid, -- 用来关联地址
        cla.customerlevelid customerlevelid -- 用来关联社会类别
-  FROM hugeboss.customers_fs               t,
-       hugeboss.manageaddresses_fs         ma,
-       hugeboss.customerlevelagreements_fs cla,
+  FROM customers_fs@fsboss               t,
+       manageaddresses_fs@fsboss         ma,
+       customerlevelagreements_fs@fsboss cla,
        fsboss_places                     p
  WHERE t.defaultinstalladdressid IS NOT NULL
    AND t.defaultinstalladdressid = ma.id

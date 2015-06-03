@@ -2,6 +2,9 @@
 SELECT COUNT(*) FROM fsboss_places t;
 SELECT COUNT(*) FROM addressen t;
 
+
+SELECT * from servicesegmenten;
+
 -- 方格图总量
 SELECT COUNT(*) FROM fsboss_manageaddresses_fs;
 SELECT COUNT(*) FROM murotoen m WHERE m.isenable = 1;
