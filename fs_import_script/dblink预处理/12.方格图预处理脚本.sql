@@ -1,6 +1,6 @@
 -- 导入所有的门址
 -- 将原门址名称放入originalname字段,将是否符合方格格式放入isformated字段,默认为0 ,1为符合
-ALTER TABLE MUROTOEN MODIFY (mem Varchar2(150))
+ALTER TABLE MUROTOEN MODIFY (mem Varchar2(150));
 DROP TABLE fsboss_manageaddresses_fs;
 CREATE TABLE fsboss_manageaddresses_fs AS
 SELECT t.*, t.name originalname, 0 isformated

@@ -86,7 +86,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                      p_modifycodestr      => NULL,
                                                                      p_terminalid         => NULL,
                                                                      p_salechannelid      => NULL,
-                                                                     p_createdt           => SYSDATE,
+                                                                     p_createdt           => c_current_level_addr.startlifecycle, -- 创建时间取原系统时间
                                                                      p_modifydt           => NULL,
                                                                      p_addressfullnamestr => v_addressfullnamestr);
             -- 插入地址扩展信息
@@ -714,7 +714,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         FROM fsboss_customer custinfo, fsboss_places p, murotoen m
        WHERE custinfo.managesectionid = p.id
          AND custinfo.murotoid = m.murotoid_pk /*
-               AND custinfo.code='300055284'*/
+                     AND custinfo.code='300055284'*/
       ;
   
   BEGIN
@@ -1417,7 +1417,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              s.endworkdt finishdt, -- 竣工时间
              NULL preinstanceid,
              NULL packagetypeid,
-             pi.resourcespecificationid resourcespecificationid,--汇巨系统中资源目录
+             pi.resourcespecificationid resourcespecificationid, --汇巨系统中资源目录
              NULL isunifiedcancelid,
              s.customerid_pk customerid_pk,
              pi.equ_type equ_type, -- 资源类型
@@ -1600,7 +1600,6 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              NULL packageid,
              fsi.subscriberstartdt subscriberstartdt, -- 计费开始日期
              NULL subscriberenddt, -- 取消订购日期  禁用
-             0 billingflag, -- 产品是否计费， 0：计费 
              NULL iffullmonthid, -- 是否整月  禁用
              fsi.rundt rundt, -- 开通日期  
              fsi.enddt enddt, -- 计费截止日期 
@@ -1651,7 +1650,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         --获取服务产品对应的新产品pk
         v_productid_pk := transfer_dvb_utils_pkg.fun_get_basedata(c_instance.serviceproduct_id,
                                                                   '服务产品PK');
-      
+        v_billingflag  := 0; -- 默认0 
         -- 基本包                                                        
         IF c_instance.export_pro_type = 1 THEN
           -- 个人客户
@@ -1659,6 +1658,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
             v_auto_continue  := 1;
             v_serviceenddt   := NULL;
             v_instance_enddt := NULL;
+            v_billingflag    := 1;
             -- 主终端
             IF c_instance.seqid = 1 THEN
               v_priceplanid := transfer_dvb_utils_pkg.fun_get_basedata(c_instance.societyid,

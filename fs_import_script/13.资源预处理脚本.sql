@@ -26,10 +26,10 @@
        tt.providerid             providerid,
 	  
        pe.keeperid               keeperid
-  FROM hugeboss.smartcards_fs                 t,
-       hugeboss.smartcardspecifications       tt,
-       hugeboss.physicalresourceentryitems_fs pi,
-       hugeboss.physicalresourceentries_fs    pe
+  FROM fsboss.smartcards_fs                 t,
+       fsboss.smartcardspecifications       tt,
+       fsboss.physicalresourceentryitems_fs pi,
+       fsboss.physicalresourceentries_fs    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id
@@ -59,10 +59,10 @@ SELECT t.id,
        tt.providerid             providerid,
 	  
        pe.keeperid               keeperid
-  FROM hugeboss.settopboxs_fs                 t,
-       hugeboss.settopboxspecifications       tt,
-       hugeboss.physicalresourceentryitems_fs pi,
-       hugeboss.physicalresourceentries_fs    pe
+  FROM fsboss.settopboxs_fs                 t,
+       fsboss.settopboxspecifications       tt,
+       fsboss.physicalresourceentryitems_fs pi,
+       fsboss.physicalresourceentries_fs    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id
@@ -92,10 +92,10 @@ SELECT t.id,
        tt.providerid             providerid,
 	   
        pe.keeperid               keeperid
-  FROM hugeboss.eocs_fs                       t,
-       hugeboss.eocspecifications             tt,
-       hugeboss.physicalresourceentryitems_fs pi,
-       hugeboss.physicalresourceentries_fs    pe
+  FROM fsboss.eocs_fs                       t,
+       fsboss.eocspecifications             tt,
+       fsboss.physicalresourceentryitems_fs pi,
+       fsboss.physicalresourceentries_fs    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id);

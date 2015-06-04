@@ -1,7 +1,7 @@
 --提取物理资源与产品见关系
 DROP TABLE fsboss_phy_ins_relation;
 CREATE TABLE fsboss_phy_ins_relation 
-AS SELECT * from hugeboss.productphysicalresources_fs;
+AS SELECT * from fsboss.productphysicalresources_fs;
 
 -- 提取物理产品实例信息
 DROP TABLE fsboss_phy_instance;
@@ -11,10 +11,10 @@ SELECT card.code rescode, -- 智能卡编码，取服务号码
        1 equ_type, -- 资源类型:智能卡
        card.resourcespecificationid resourcespecificationid,
        pd.*
-  FROM hugeboss.products_fs                 pd,
-       hugeboss.productphysicalresources_fs phy,
-       hugeboss.smartcards_fs               card,
-       hugeboss.marketingplans              mk
+  FROM fsboss.products_fs                 pd,
+       fsboss.productphysicalresources_fs phy,
+       fsboss.smartcards_fs               card,
+       fsboss.marketingplans              mk
  WHERE pd.id = phy.productid
    AND phy.physicalresourceid = card.id
    AND pd.marketingplanid = mk.id(+)
@@ -27,10 +27,10 @@ SELECT box.code rescode, -- 机顶盒编码
        2 equ_type, -- 资源类型:机顶盒
        box.resourcespecificationid resourcespecificationid,
        pd.*
-  FROM hugeboss.productphysicalresources_fs phy,
-       hugeboss.products_fs                 pd,
-       hugeboss.settopboxs_fs               box,
-       hugeboss.marketingplans              mk
+  FROM fsboss.productphysicalresources_fs phy,
+       fsboss.products_fs                 pd,
+       fsboss.settopboxs_fs               box,
+       fsboss.marketingplans              mk
  WHERE pd.id = phy.productid
    AND phy.physicalresourceid = box.id
    AND pd.marketingplanid = mk.id(+)
@@ -43,10 +43,10 @@ SELECT eoc.code rescode, -- EOC编码
        9 equ_type, -- 资源类型：eoc
        eoc.resourcespecificationid resourcespecificationid,
        pd.*
-  FROM hugeboss.products_fs                 pd,
-       hugeboss.productphysicalresources_fs phy, --Eoc资源占用表
-       hugeboss.eocs_fs                     eoc,
-       hugeboss.marketingplans              mk
+  FROM fsboss.products_fs                 pd,
+       fsboss.productphysicalresources_fs phy, --Eoc资源占用表
+       fsboss.eocs_fs                     eoc,
+       fsboss.marketingplans              mk
  WHERE pd.id = phy.productid
    AND pd.marketingplanid = mk.id(+)
    AND phy.physicalresourceid = eoc.id;

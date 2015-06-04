@@ -21,12 +21,12 @@ SELECT pd.terminalid,
        pd.startlifecycle finishdt, -- 竣工日期，取产品的计费开始日期
        po.name oldproname, -- 原系统产品名称
        1 export_pro_type -- 导库用产品类型 1：数字基本包
-  FROM hugeboss.products_fs               pd, --汇巨系统用户订购表
-       hugeboss.marketingplans            mk, --营销计划表
-       hugeboss.productofferings          po,
-       hugeboss.productofferingattributes poatt,
-       hugeboss.simpletypes               poatts,
-       hugeboss.preferentialpolicies      pre
+  FROM fsboss.products_fs               pd, --汇巨系统用户订购表
+       fsboss.marketingplans            mk, --营销计划表
+       fsboss.productofferings          po,
+       fsboss.productofferingattributes poatt,
+       fsboss.simpletypes               poatts,
+       fsboss.preferentialpolicies      pre
  WHERE pd.productofferingid = po.id
    AND po.id = poatt.productofferingid
    AND poatt.domainobjectattributeid = poatts.id
@@ -53,9 +53,9 @@ SELECT pd.terminalid,
        pf.name oldproname, -- 原系统产品名称
        2 export_pro_type -- 导库用产品类型 2：简单产品
   FROM fsboss_products             pf, --需要导入的产品信息表
-       hugeboss.products_fs          pd,
-       hugeboss.marketingplans       mk, --汇巨系统的营销计划
-       hugeboss.preferentialpolicies pre
+       fsboss.products_fs          pd,
+       fsboss.marketingplans       mk, --汇巨系统的营销计划
+       fsboss.preferentialpolicies pre
  WHERE pd.productofferingid = pf.id
    AND pd.marketingplanid = mk.id(+)
    AND pd.preferentialpolicyid = pre.id(+)
@@ -79,9 +79,9 @@ SELECT pd.terminalid,
        pf.name oldproname, -- 原系统产品名称
        2 export_pro_type -- 导库用产品类型 2：简单产品
   FROM fsboss_products             pf, --需要导入的产品信息表
-       hugeboss.products_fs          pd,
-       hugeboss.marketingplans       mk, --汇巨系统的营销计划
-       hugeboss.preferentialpolicies pre
+       fsboss.products_fs          pd,
+       fsboss.marketingplans       mk, --汇巨系统的营销计划
+       fsboss.preferentialpolicies pre
  WHERE pd.productofferingid = pf.id
    AND pd.marketingplanid = mk.id(+)
    AND pd.preferentialpolicyid = pre.id(+)
@@ -105,10 +105,10 @@ SELECT pd.terminalid,
        pd.startvalidfor finishdt, -- 竣工日期，取产品的计费开始日期
        pd.name oldproname, -- 原系统产品名称
        3 export_pro_type -- 导库用产品类型 3,模拟基本包
-  FROM hugeboss.productofferingattributes poatt,
-       hugeboss.simpletypes               poatts,
-       hugeboss.products_fs               pd,
-       hugeboss.preferentialpolicies      pre -- 汇巨系统优惠
+  FROM fsboss.productofferingattributes poatt,
+       fsboss.simpletypes               poatts,
+       fsboss.products_fs               pd,
+       fsboss.preferentialpolicies      pre -- 汇巨系统优惠
  WHERE pd.productofferingid = poatt.productofferingid
    AND poatt.domainobjectattributeid = poatts.id
    AND poatts.code = 'Po_Analog'

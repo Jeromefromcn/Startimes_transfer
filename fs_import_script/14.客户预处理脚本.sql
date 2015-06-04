@@ -4,16 +4,16 @@ ALTER TABLE customeren modify(customernamestr VARCHAR2(256));
 ALTER TABLE accounten Modify(accountnamestr Varchar2(255));
 ALTER TABLE acctbooken MODIFY (acctbooknamestr VARCHAR2(256));
 ALTER TABLE subscriberen ADD(addinfostr4 VARCHAR2(50));
-ALTER TABLE customeren MODIFY (LINKMANSTR Varchar2(256))
+ALTER TABLE customeren MODIFY (LINKMANSTR Varchar2(256));
 
 DROP TABLE fsboss_customer; 
 CREATE TABLE fsboss_customer AS
 SELECT t.*,
        ma.managesectionid  managesectionid, -- 用来关联地址
        cla.customerlevelid customerlevelid -- 用来关联社会类别
-  FROM hugeboss.customers_fs               t,
-       hugeboss.manageaddresses_fs         ma,
-       hugeboss.customerlevelagreements_fs cla,
+  FROM fsboss.customers_fs               t,
+       fsboss.manageaddresses_fs         ma,
+       fsboss.customerlevelagreements_fs cla,
        fsboss_places                     p
  WHERE t.defaultinstalladdressid IS NOT NULL
    AND t.defaultinstalladdressid = ma.id

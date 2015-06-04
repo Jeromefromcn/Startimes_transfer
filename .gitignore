@@ -144,6 +144,7 @@ AppPackages/
 # Others
 sql/
 *.~sql
+*.~pck
 *.Cache
 ClientBin/
 [Ss]tyle[Cc]op.*
