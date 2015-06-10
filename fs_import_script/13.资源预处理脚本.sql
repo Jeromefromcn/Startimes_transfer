@@ -26,10 +26,10 @@
        tt.providerid             providerid,
 	  
        pe.keeperid               keeperid
-  FROM fsboss.smartcards_fs                 t,
-       fsboss.smartcardspecifications       tt,
-       fsboss.physicalresourceentryitems_fs pi,
-       fsboss.physicalresourceentries_fs    pe
+  FROM huiju.smartcards_fs                 t,
+       huiju.smartcardspecifications       tt,
+       huiju.physicalresourceentryitems_fs pi,
+       huiju.physicalresourceentries_fs    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id
@@ -59,10 +59,10 @@ SELECT t.id,
        tt.providerid             providerid,
 	  
        pe.keeperid               keeperid
-  FROM fsboss.settopboxs_fs                 t,
-       fsboss.settopboxspecifications       tt,
-       fsboss.physicalresourceentryitems_fs pi,
-       fsboss.physicalresourceentries_fs    pe
+  FROM huiju.settopboxs_fs                 t,
+       huiju.settopboxspecifications       tt,
+       huiju.physicalresourceentryitems_fs pi,
+       huiju.physicalresourceentries_fs    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id
@@ -92,10 +92,10 @@ SELECT t.id,
        tt.providerid             providerid,
 	   
        pe.keeperid               keeperid
-  FROM fsboss.eocs_fs                       t,
-       fsboss.eocspecifications             tt,
-       fsboss.physicalresourceentryitems_fs pi,
-       fsboss.physicalresourceentries_fs    pe
+  FROM huiju.eocs_fs                       t,
+       huiju.eocspecifications             tt,
+       huiju.physicalresourceentryitems_fs pi,
+       huiju.physicalresourceentries_fs    pe
  WHERE t.resourcespecificationid = tt.id
    AND t.id = pi.physicalresourceid
    AND pi.physicalresourceentryid = pe.id);

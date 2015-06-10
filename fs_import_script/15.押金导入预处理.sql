@@ -2,7 +2,7 @@
 DROP TABLE fsboss_cash_deposit;
 CREATE TABLE fsboss_cash_deposit AS
 SELECT pi.customeraccountbalanceid, pi.pricetypeid
-  FROM fsboss.paymentitems_fs pi, fsboss.customeraccountbalances_fs accb
+  FROM huiju.paymentitems_fs pi, huiju.customeraccountbalances_fs accb
  WHERE accb.id = pi.customeraccountbalanceid
    AND accb.balancetypeid = 9223372030852305573
    AND accb.amount > 0
@@ -22,10 +22,10 @@ SELECT acc.customerid,
        eu.employee_id,
        eu.organizationunit_id,
        eu.employee_name
-  FROM fsboss.payments_fs               pay,
-       fsboss.paymentitems_fs           pi,
-       fsboss.customeraccounts_fs       acc,
-       fsboss.employee_organizationunit eu,
+  FROM huiju.payments_fs               pay,
+       huiju.paymentitems_fs           pi,
+       huiju.customeraccounts_fs       acc,
+       huiju.employee_organizationunit eu,
        fsboss_cash_deposit              dp
  WHERE pi.paymentid = pay.id
    AND pay.customeraccountid = acc.id

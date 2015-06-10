@@ -90,14 +90,14 @@ CREATE OR REPLACE PACKAGE BODY "TRANSFER_DVB_UTILS_PKG" IS
   
     CURSOR stb_types IS
       SELECT pd.id
-        FROM fsboss.products_fs pd
+        FROM huiju.products_fs pd
        WHERE pd.id = products_fsid
          AND EXISTS
        (SELECT 'x'
-                FROM fsboss.products_fs                 pf,
-                     fsboss.productphysicalresources_fs phy,
-                     fsboss.settopboxs_fs               st,
-                     fsboss.settopboxspecifications     sts
+                FROM huiju.products_fs                 pf,
+                     huiju.productphysicalresources_fs phy,
+                     huiju.settopboxs_fs               st,
+                     huiju.settopboxspecifications     sts
                WHERE pf.terminalid = pd.terminalid
                  AND pf.id = phy.productid
                  AND st.id = phy.physicalresourceid

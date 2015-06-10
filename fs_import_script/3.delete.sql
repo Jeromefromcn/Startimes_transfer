@@ -1,5 +1,5 @@
 -- 删除操作员
-/*DELETE FROM operationlogen;
+DELETE FROM operationlogen;
 DELETE FROM operator_roleen o WHERE o.operatorid_pk NOT IN (1, 2);
 DELETE FROM operator_stocken os WHERE os.operatorid_pk NOT IN (1, 2);
 DELETE FROM operator_salechannelen os WHERE os.operatorid_pk NOT IN (1, 2);
@@ -7,7 +7,7 @@ DELETE FROM operator_operareaen oo WHERE oo.operatorid_pk NOT IN (1, 2);
 DELETE FROM favoriteen f WHERE f.operatorid NOT IN (1, 2);
 DELETE FROM servicesegment_operatoren so
  WHERE so.operator_pk NOT IN (1, 2);
-DELETE FROM operatoren o WHERE o.operatorid_pk NOT IN (1, 2);*/
+DELETE FROM operatoren o WHERE o.operatorid_pk NOT IN (1, 2);
 
 -- 其他需要删除的表
 
@@ -34,17 +34,22 @@ DELETE FROM billen;
 DELETE FROM oweobjecten;
 
 -- 服务产品实例
-DELETE FROM priceinstanceen t
- WHERE EXISTS (SELECT 'x'
-          FROM instanceen i
-         WHERE i.productchildtypeid = 2
-           AND t.instanceid_pk = i.instanceid_pk);
+delete from priceinstanceen t WHERE EXISTS(
+  SELECT 'x'
+    FROM instanceen i
+   WHERE i.productchildtypeid = 2
+     AND t.instanceid_pk = i.instanceid_pk);
+delete from priceinstanceen t WHERE EXISTS(
+  SELECT 'x'
+    FROM instanceen i
+   WHERE i.productchildtypeid = 2
+     AND t.instanceid_pk = i.instanceid_pk);
 DELETE FROM prodinschangelogen t
  WHERE EXISTS (SELECT 'x'
           FROM instanceen i
          WHERE i.productchildtypeid = 2
            AND t.instanceid_pk = i.instanceid_pk);
-DELETE FROM instanceserviceen;
+delete from instanceserviceen;
 DELETE FROM instanceen t WHERE t.productchildtypeid = 2;
 
 -- 物理产品实例
@@ -59,42 +64,42 @@ DELETE FROM prodinschangelogen t
           FROM instanceen i
          WHERE i.productchildtypeid = 1
            AND t.instanceid_pk = i.instanceid_pk);
-DELETE FROM instanceen t WHERE t.productchildtypeid = 1;
+delete from instanceen t WHERE t.productchildtypeid = 1;
 -- 用户
 DELETE FROM subscriberstatusalterlogen;
 DELETE FROM acceptsheet_subscriberen;
-DELETE FROM subscriberen;
+delete from subscriberen;
 -- 押金
 DELETE FROM depositrecorden;
 DELETE FROM paymenten;
 -- 客户
-DELETE FROM muroto_custen;
-DELETE FROM acctbalanceobjen;
-DELETE FROM payprojecten;
-DELETE FROM balancelogen;
-DELETE FROM acctbooken;
-DELETE FROM writeoffen;
-DELETE FROM ncpayrelation;
-DELETE FROM note_paymenten;
-DELETE FROM checkpayrelation;
-DELETE FROM paymenten;
-DELETE FROM accounten;
-DELETE FROM norecurringen;
-DELETE FROM ordercontenten;
-DELETE FROM orderen;
-DELETE FROM acceptsheeten;
-DELETE FROM printinstanceen;
-DELETE FROM customeren;
+delete from muroto_custen;
+delete from acctbalanceobjen;
+delete from payprojecten;
+delete from balancelogen;
+delete from acctbooken;
+delete from writeoffen;
+delete from ncpayrelation;
+delete from note_paymenten;
+delete from checkpayrelation;
+delete from paymenten;
+delete from accounten;
+delete from norecurringen;
+delete from ordercontenten;
+delete from orderen;
+delete from acceptsheeten;
+delete from printinstanceen;
+delete from customeren;
 -- 逻辑资源
 DELETE FROM logicresourceen;
 -- 物理资源
 DELETE FROM formdetailen;
-DELETE FROM phyresourceen;
+delete from phyresourceen;
 -- 方格图
-DELETE FROM muroto_custen;
-DELETE FROM murotoen;
-DELETE FROM flooren;
-DELETE FROM uniten;
+truncate table muroto_custen;
+delete from murotoen;
+delete from flooren;
+delete from uniten;
 -- 网格关系
 DELETE FROM servicesegment_addressen;
 DELETE FROM servicesegment_operatoren;

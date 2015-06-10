@@ -42,3 +42,6 @@ SELECT c.code, pi.*
  WHERE NOT EXISTS
  (SELECT '*' FROM subscriberen s WHERE s.addinfostr4 = pi.terminalid)
    AND c.id = pi.customerid;
+   
+   
+   select count(*) from billen;

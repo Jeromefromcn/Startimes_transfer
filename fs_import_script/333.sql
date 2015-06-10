@@ -1,0 +1,34 @@
+create table USERS_FS as select * from USERS_FS@fsboss;
+create table USERSERVICES_FS as select * from USERSERVICES_FS@fsboss;
+create table TERMINALS_FS as select * from TERMINALS_FS@fsboss;
+create table TERMINALSPECIFICATIONS as select * from TERMINALSPECIFICATIONS@fsboss;
+create table SMARTCARDS_FS as select * from SMARTCARDS_FS@fsboss;
+create table SMARTCARDSPECIFICATIONS as select * from SMARTCARDSPECIFICATIONS@fsboss;
+create table SIMPLETYPES as select * from SIMPLETYPES@fsboss;
+create table SETTOPBOXS_FS as select * from SETTOPBOXS_FS@fsboss;
+create table SETTOPBOXSPECIFICATIONS as select * from SETTOPBOXSPECIFICATIONS@fsboss;
+create table PRODUCTS_FS as select * from PRODUCTS_FS@fsboss;
+create table PRODUCTSERVICES_FS as select * from PRODUCTSERVICES_FS@fsboss;
+create table PRODUCTPHYSICALRESOURCES_FS as select * from PRODUCTPHYSICALRESOURCES_FS@fsboss;
+create table PRODUCTOFFERINGS as select * from PRODUCTOFFERINGS@fsboss;
+create table PRODUCTOFFERINGATTRIBUTES as select * from PRODUCTOFFERINGATTRIBUTES@fsboss;
+create table PREFERENTIALPOLICIES as select * from PREFERENTIALPOLICIES@fsboss;
+create table PLACES as select * from PLACES@fsboss;
+create table PHYSICALRESOURCEENTRYITEMS_FS as select * from PHYSICALRESOURCEENTRYITEMS_FS@fsboss;
+create table PHYSICALRESOURCEENTRIES_FS as select * from PHYSICALRESOURCEENTRIES_FS@fsboss;
+create table PAYMENTS_FS as select * from PAYMENTS_FS@fsboss;
+create table PAYMENTITEMS_FS as select * from PAYMENTITEMS_FS@fsboss;
+create table MANAGEADDRESSES_FS as select * from MANAGEADDRESSES_FS@fsboss;
+create table EOCS_FS as select * from EOCS_FS@fsboss;
+create table EOCSPECIFICATIONS as select * from EOCSPECIFICATIONS@fsboss;
+create table CUSTOMERS_FS as select * from CUSTOMERS_FS@fsboss;
+create table CUSTOMERLEVELAGREEMENTS_FS as select * from CUSTOMERLEVELAGREEMENTS_FS@fsboss;
+create table CUSTOMERACCOUNTS_FS as select * from CUSTOMERACCOUNTS_FS@fsboss;
+create table CUSTOMERACCOUNTBALANCES_FS as select * from CUSTOMERACCOUNTBALANCES_FS@fsboss;
+create table AREAS as select * from AREAS@fsboss;
+create table AREAMANAGESECTIONS as select * from AREAMANAGESECTIONS@fsboss;
+
+
+create table EMPLOYEE_ORGANIZATIONUNIT as select * from EMPLOYEE_ORGANIZATIONUNIT@fsboss;
+create table marketingplans as select * from marketingplans@fsboss;
+create table organizationunitinfos as select * from organizationunitinfos@fsboss;

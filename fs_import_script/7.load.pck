@@ -1587,6 +1587,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     v_serviceenddt         DATE;
     v_cnt                  NUMBER;
     v_cnt_err              NUMBER;
+    v_billingflag          number;
   
     CURSOR cur_instance IS
       SELECT s.subscriberid_pk subscriberid_pk, -- 用户PK
@@ -1658,7 +1659,6 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
             v_auto_continue  := 1;
             v_serviceenddt   := NULL;
             v_instance_enddt := NULL;
-            v_billingflag    := 1;
             -- 主终端
             IF c_instance.seqid = 1 THEN
               v_priceplanid := transfer_dvb_utils_pkg.fun_get_basedata(c_instance.societyid,
@@ -1731,7 +1731,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_packageid            => c_instance.packageid, -- 套餐PK null
                                                                   p_subscriberstartdt    => v_instance_startdt, -- 计费开始日期
                                                                   p_subscriberenddt      => v_instance_enddt, -- 取消定购日期 null
-                                                                  p_billingflag          => c_instance.billingflag, -- 计费标识 
+                                                                  p_billingflag          => v_billingflag, -- 计费标识 
                                                                   p_iffullmonthid        => c_instance.iffullmonthid, -- 是否整月 null
                                                                   p_statusid             => 0, -- 产品实例状态 0：有效
                                                                   p_rundt                => c_instance.createdt, -- 开通时间
@@ -1888,7 +1888,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
          AND -- 服务产品实例
              i.productid = 1122
          AND -- 只处理基本包
-             s.statusid = 0
+             s.statusid not in(1,2,3)
          AND -- 用户状态为 正常
              i.enddt IS NULL
          AND -- 计费截止日期
@@ -1896,7 +1896,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
          AND -- 自动延续的产品实例
              i.subscriberstartdt > trunc(SYSDATE)
          AND -- 计费开始日期
-             i.subscriberstartdt < to_date('2015-05-01', 'yyyy-mm-dd');
+             i.subscriberstartdt < to_date('2015-07-01', 'yyyy-mm-dd');
   
   BEGIN
   

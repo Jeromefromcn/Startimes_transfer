@@ -10,7 +10,7 @@ DELETE FROM transfer_errors;
 commit;
 */
 
-SELECT * from fsboss_ser_instance fsi WHERE fsi.terminalid IN (1118999999735760095);
+--SELECT * from fsboss_ser_instance fsi WHERE fsi.terminalid IN (1118999999735760095);
 
 
 

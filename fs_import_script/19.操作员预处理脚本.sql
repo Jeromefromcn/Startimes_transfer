@@ -5,8 +5,8 @@ SELECT eu.*,
        org.operationroleid,
        org.operationrolename,
        transfer_dvb_utils_pkg.fun_md5(nvl(eu.password, '123456')) new_password
-  FROM fsboss.organizationunitinfos     org,
-       fsboss.employee_organizationunit eu
+  FROM huiju.organizationunitinfos     org,
+       huiju.employee_organizationunit eu
  WHERE org.id = eu.organizationunit_id;
 --操作员与营销渠道
 ALTER TABLE fsboss_operators add starboss_salechannel_id NUMBER(8);

@@ -1,11 +1,11 @@
 -- 创建p1表 
 DROP TABLE temp_places1;
 CREATE TABLE temp_places1 AS
-SELECT fsboss.get_strarraystrofindex(sys_connect_by_path(p.id, '>'), '>', 1) cid,
+SELECT huiju.get_strarraystrofindex(sys_connect_by_path(p.id, '>'), '>', 1) cid,
        p.id,
        p.operationroleid,
        p.endlifecycle
-  FROM fsboss.places p
+  FROM huiju.places p
  START WITH p.parentid IS NOT NULL
 CONNECT BY PRIOR p.parentid = p.id;
 -- 增加索引
@@ -16,7 +16,7 @@ CREATE INDEX index_places1_3 ON temp_places1(cid);
 DROP TABLE temp_places2;
 CREATE TABLE temp_places2 AS
 SELECT pa1.operationroleid, pa2.id, pa2.code, pa2.endlifecycle, pa2.name
-  FROM fsboss.places pa1, fsboss.places pa2
+  FROM huiju.places pa1, huiju.places pa2
  WHERE pa1.parentid IS NULL
    AND pa2.parentid = pa1.id;
 -- 增加索引
@@ -44,17 +44,17 @@ SELECT pd.*,
        202 equiptypeid -- 设备类型
   FROM temp_places1                       p1,
        temp_places2                       p2,
-       fsboss.manageaddresses_fs          m,
-       fsboss.customers_fs                c,
-       fsboss.products_fs                 pd,
-       fsboss.productofferingattributes   poa,
-       fsboss.simpletypes                 pos,
-       fsboss.terminals_fs                t,
-       fsboss.terminalspecifications      ts,
-       fsboss.smartcards_fs               sc,
-       fsboss.productphysicalresources_fs ppr,
-       fsboss.products_fs                 scpd,
-       fsboss.employee_organizationunit   eu
+       huiju.manageaddresses_fs          m,
+       huiju.customers_fs                c,
+       huiju.products_fs                 pd,
+       huiju.productofferingattributes   poa,
+       huiju.simpletypes                 pos,
+       huiju.terminals_fs                t,
+       huiju.terminalspecifications      ts,
+       huiju.smartcards_fs               sc,
+       huiju.productphysicalresources_fs ppr,
+       huiju.products_fs                 scpd,
+       huiju.employee_organizationunit   eu
  WHERE p1.operationroleid = p2.operationroleid
    AND p1.id = p2.id
    AND m.managesectionid = p1.cid
@@ -89,13 +89,13 @@ SELECT pd.*,
        1045 subscriber_tpye, -- 模拟普通用户类型
        1 authenticationtypeid, -- 模拟认证方式
        NULL equiptypeid -- 设备类型
-  FROM fsboss.products_fs               pd, -- 汇巨系统产品订购表
-       fsboss.productofferings          po,
-       fsboss.productofferingattributes poatt,
-       fsboss.simpletypes               poatts,
-       fsboss.customers_fs              c, --汇巨系统客户表
-       fsboss.terminals_fs              t,
-       fsboss.employee_organizationunit eu -- 受理人记录
+  FROM huiju.products_fs               pd, -- 汇巨系统产品订购表
+       huiju.productofferings          po,
+       huiju.productofferingattributes poatt,
+       huiju.simpletypes               poatts,
+       huiju.customers_fs              c, --汇巨系统客户表
+       huiju.terminals_fs              t,
+       huiju.employee_organizationunit eu -- 受理人记录
  WHERE pd.customerid = c.id
    AND c.defaultinstalladdressid IS NOT NULL --没有门址的客户不导入
    AND pd.productofferingid = po.id
@@ -125,16 +125,16 @@ SELECT pd.*,
        30451 subscriber_tpye, -- IP类型
        3 authenticationtypeid, -- 宽带认证方式
        NULL equiptypeid -- 设备类型
-  FROM fsboss.customers_fs              c, --汇巨系统客户表
-       fsboss.products_fs               pd, --汇巨系统产品订购表
-       fsboss.productofferings          po, --汇巨系统产品表
-       fsboss.productofferingattributes poatt, --汇巨系统产品类型表
-       fsboss.simpletypes               poatts, --汇巨系统产品类型表2
-       fsboss.productservices_fs        pf, --汇巨系统产品服务表
-       fsboss.userservices_fs           uf, --汇巨系统用户订购服务表
-       fsboss.users_fs                  users, --汇巨系统用户表，记录用户宽带账号
-       fsboss.employee_organizationunit eu, -- 受理人记录
-       fsboss.terminals_fs              t
+  FROM huiju.customers_fs              c, --汇巨系统客户表
+       huiju.products_fs               pd, --汇巨系统产品订购表
+       huiju.productofferings          po, --汇巨系统产品表
+       huiju.productofferingattributes poatt, --汇巨系统产品类型表
+       huiju.simpletypes               poatts, --汇巨系统产品类型表2
+       huiju.productservices_fs        pf, --汇巨系统产品服务表
+       huiju.userservices_fs           uf, --汇巨系统用户订购服务表
+       huiju.users_fs                  users, --汇巨系统用户表，记录用户宽带账号
+       huiju.employee_organizationunit eu, -- 受理人记录
+       huiju.terminals_fs              t
  WHERE pd.statusid IN (3601, 3602, 3604, 3605, 3612)
    AND pd.productofferingid = po.id
    AND po.id = poatt.productofferingid
@@ -165,13 +165,13 @@ SELECT pd.*,
        30452 subscriber_tpye, -- 专网类型
        3 authenticationtypeid, -- 宽带认证方式
        NULL equiptypeid -- 设备类型
-  FROM fsboss.customers_fs              c, --汇巨系统客户表
-       fsboss.products_fs               pd, --汇巨系统产品订购表
-       fsboss.productofferings          po, --汇巨系统产品表
-       fsboss.productofferingattributes poatt, --汇巨系统产品类型表
-       fsboss.simpletypes               poatts,
-       fsboss.employee_organizationunit eu, --受理人
-       fsboss.terminals_fs              t
+  FROM huiju.customers_fs              c, --汇巨系统客户表
+       huiju.products_fs               pd, --汇巨系统产品订购表
+       huiju.productofferings          po, --汇巨系统产品表
+       huiju.productofferingattributes poatt, --汇巨系统产品类型表
+       huiju.simpletypes               poatts,
+       huiju.employee_organizationunit eu, --受理人
+       huiju.terminals_fs              t
  WHERE pd.statusid IN (3601, 3602, 3604, 3605, 3612)
    AND pd.productofferingid = po.id
    AND po.id = poatt.productofferingid
@@ -182,7 +182,7 @@ SELECT pd.*,
    AND pd.terminalid = t.id
    AND c.defaultinstalladdressid IS NOT NULL
    AND NOT EXISTS (SELECT 'x'
-          FROM fsboss.productservices_fs pf
+          FROM huiju.productservices_fs pf
          WHERE pf.productid = pd.id);
          
 -- 增加索引
