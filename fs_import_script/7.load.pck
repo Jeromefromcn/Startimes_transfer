@@ -2,7 +2,7 @@ CREATE OR REPLACE PACKAGE transfer_dvb_load_pkg IS
 
   -- Author  : HUDAZHU
   -- Created : 2014/9/1 10:31:08 AM
-  -- Purpose : 
+  -- Purpose :
 
   sql_code VARCHAR2(50);
   sql_errm VARCHAR2(1000);
@@ -32,6 +32,8 @@ CREATE OR REPLACE PACKAGE transfer_dvb_load_pkg IS
 
   PROCEDURE load_generate_bills; -- 生成导库日到月底的欠费帐单
 
+  PROCEDURE PRC_DEL_BAD_SEGMENT_ADDR; -- 处理地址与网格的关系
+
 END transfer_dvb_load_pkg;
 /
 CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
@@ -46,13 +48,13 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     v_addressfullnamestr addressen.addressfullnamestr%TYPE;
     v_mem                addressen.mem%TYPE;
     v_result             NUMBER(1);
-  
+
     -- 根据当前级别查询对应地址
     CURSOR cursor_current_level_address(level_id NUMBER) IS
       SELECT * FROM fsboss_places t WHERE t.address_level = level_id;
-  
+
   BEGIN
-  
+
     -- 循环第二级到第八级地址
     FOR level_id IN 2 .. 8 LOOP
       v_level_count := 1;
@@ -69,7 +71,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
             v_addressfullnamestr := c_current_level_addr.parent_full_name ||
                                     c_current_level_addr.name; -- 地址全称
             v_mem                := c_current_level_addr.id; -- 原系统id
-          
+
             SELECT seq_addressen.nextval INTO v_addressid_pk FROM dual;
             v_result := transfer_dvb_insert_pkg.fun_insert_addressen(p_addressid_pk       => v_addressid_pk, -- 地址PK
                                                                      p_addressid_fk       => c_current_level_addr.parentid_in_starboss,
@@ -104,7 +106,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                SYSDATE,
                1,
                c_current_level_addr.analogsignalstopdate);
-          
+
             -- 更新地址上starboss中的地址id
             UPDATE fsboss_places fp
                SET fp.id_in_starboss = v_addressid_pk
@@ -138,9 +140,9 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
       SELECT os.stockid_pk
         FROM salechannel_stocken os
        WHERE os.salechannelid_pk = salechannelid;
-  
+
   BEGIN
-  
+
     FOR v_old_operator IN old_operators LOOP
       SELECT seq_operatoren.nextval INTO v_operator_id FROM dual;
       --操作员
@@ -176,7 +178,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
       INSERT INTO operator_salechannelen os
       VALUES
         (v_old_operator.starboss_salechannel_id, v_operator_id, 1);
-    
+
       --操作员与运营区域
       FOR v_operarea IN operareas LOOP
         INSERT INTO operator_operareaen oo
@@ -196,7 +198,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
             (v_operator_id, v_operator_stock.stockid_pk);
         END LOOP;
       END IF;
-    
+
     END LOOP;
     COMMIT;
   END;
@@ -257,7 +259,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     v_cnt     := 0;
     v_cnt_err := 0;
     FOR c_building IN cur_buildings LOOP
-    
+
       BEGIN
         -- 插入0单元
         SELECT seq_uniten.nextval INTO v_zero_unitid_pk FROM dual;
@@ -298,7 +300,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                p_modifydt       => NULL,
                                                                p_salechannelid1 => NULL,
                                                                p_operareaid     => NULL);
-      
+
         FOR unitnum IN 1 .. c_building.unitnum LOOP
           -- 生成单元
           SELECT seq_uniten.nextval INTO v_unitid_pk FROM dual;
@@ -347,7 +349,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                 v_first_level_pk := v_floorid_pk;
               END IF;
             END IF;
-          
+
             FOR murotonum IN 1 .. c_building.murotonum LOOP
               -- 生成方格
               SELECT seq_murotoen.nextval INTO v_murotoid_pk FROM dual;
@@ -358,7 +360,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                 FROM fsboss_manageaddresses_fs fma
                WHERE fma.connectioncode = v_grid_code
                  AND fma.managesectionid = c_building.managesectionid;
-            
+
               IF v_count_muroto > 0 THEN
                 -- 如果存在门址,方格有效，并建立方格与客户的关系
                 v_isenable := 1;
@@ -371,7 +373,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                            AND fma.managesectionid =
                                c_building.managesectionid
                            AND c.defaultinstalladdressid = fma.id);
-                /*                 
+                /*
                 c.defaultinstalladdressid IN
                       (SELECT fma.id
                          FROM fsboss_manageaddresses_fs fma
@@ -382,7 +384,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                 -- 如何不存在门址，方格为无效
                 v_isenable := 0;
               END IF;
-            
+
               v_result := transfer_dvb_insert_pkg.fun_insert_murotoen(p_murotoid_pk    => v_murotoid_pk,
                                                                       p_murotonamestr  => v_grid_code,
                                                                       p_murotocodestr  => v_grid_code,
@@ -404,11 +406,11 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                       p_modifydt       => NULL,
                                                                       p_salechannelid1 => NULL,
                                                                       p_operareaid     => NULL);
-            
+
             END LOOP;
           END LOOP;
         END LOOP;
-      
+
         v_count_attachement := 1;
         FOR c_attachment IN cur_attachments(c_building.managesectionid) LOOP
           -- 导入依托的方格
@@ -441,14 +443,14 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              SET c.murotoid = v_murotoid_pk
            WHERE c.defaultinstalladdressid = c_attachment.id;
         END LOOP;
-      
+
         v_cnt := v_cnt + 1;
         IF MOD(v_cnt, 500) = 0 THEN
           COMMIT;
           transfer_dvb_log_pkg.transfer_log_prc(p_msg => v_cnt ||
                                                          ' grid have been loaded in transfer_dvb_load_pkg.load_grid_prc.');
         END IF;
-      
+
       EXCEPTION
         WHEN OTHERS THEN
           sql_code  := SQLCODE;
@@ -469,16 +471,16 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
   END;
 
   PROCEDURE load_phyresource_prc IS
-  
+
     v_resourceid_pk phyresourceen.resourceid_pk%TYPE;
-  
+
     v_resource_code VARCHAR2(50); -- 资源编码
-  
+
     v_cnt     NUMBER;
     v_cnt_err NUMBER;
-  
+
     CURSOR cur_phyresource IS
-    
+
       SELECT ph.statusid pr_status, -- 资源状态
              NULL cardcataid_pk, -- 卡目录标识,只有资源是充值卡才起作用
              NULL servicestr, -- 服务号码（未用）
@@ -520,7 +522,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              NULL isbindid, -- 是否机卡配对，默认不配对
              NULL targetsalechannelid, -- 操作目的渠道：用户记录出库、调拨等操作的目的渠道
              NULL packagecodestr, -- 资源所在的箱号
-             NULL specificationid_pk, -- 资源所属规格型号ID（与资源规格型号表对应）  
+             NULL specificationid_pk, -- 资源所属规格型号ID（与资源规格型号表对应）
              ph.keeperid keeperid, -- 仓库
              ph.equiptype equiptype, --资源类型
              ph.resourcespecificationid resourcecata
@@ -528,7 +530,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
       /*       WHERE ph.id IN
       (9223372029411060158, 9223372029385538314, 9223372029405729160)*/
       ;
-  
+
   BEGIN
     v_cnt     := 0;
     v_cnt_err := 0;
@@ -536,7 +538,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     FOR c_phyresource IN cur_phyresource LOOP
       BEGIN
         SELECT seq_phyresourceen.nextval INTO v_resourceid_pk FROM dual;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_phyresourceen(p_resourceid_pk        => v_resourceid_pk,
                                                                      p_stockid_pk           => transfer_dvb_utils_pkg.fun_get_basedata(c_phyresource.keeperid,
                                                                                                                                        '仓库'), -- 仓库
@@ -587,16 +589,16 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                      p_targetsalechannelid  => c_phyresource.targetsalechannelid,
                                                                      p_packagecodestr       => c_phyresource.packagecodestr,
                                                                      p_specificationid_pk   => c_phyresource.specificationid_pk
-                                                                     
+
                                                                      );
-      
+
         v_cnt := v_cnt + 1;
         IF MOD(v_cnt, 10000) = 0 THEN
           COMMIT;
           transfer_dvb_log_pkg.transfer_log_prc(p_msg => v_cnt ||
                                                          ' phyresource have been loaded in transfer_dvb_load_pkg.load_phyresource_prc.');
         END IF;
-      
+
       EXCEPTION
         WHEN OTHERS THEN
           sql_code  := SQLCODE;
@@ -618,7 +620,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
   END;
 
   PROCEDURE load_customer_prc IS
-  
+
     v_cnt                NUMBER;
     v_cnt_err            NUMBER;
     v_customerid         customeren.customerid_pk%TYPE;
@@ -627,57 +629,57 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     v_payprojectid_pk    payprojecten.payprojectid_pk%TYPE;
     v_accbalanceobjid_pk acctbalanceobjen.accbalanceobjid_pk%TYPE;
     v_operareaid         accounten.operareaid%TYPE;
-  
+
     CURSOR c_customer IS
-    
+
       SELECT NULL customerid_fk,
-             
+
              decode(custinfo.customertypeid, 1, 0, 2, 1, 0) customertypeid,
-             
+
              -- 客户姓名，去掉空格
              REPLACE(custinfo.name, ' ', '') customernamestr,
-             
+
              custinfo.code customercodestr,
-             
+
              -- 证件类型
              custinfo.partyidentificationtypeid certificatetypeid,
-             
+
              -- 证件号码
              REPLACE(custinfo.partyidentificationno, ' ', '') certcodestr,
-             
+
              -- 联系电话
              REPLACE(custinfo.telephoneno, ' ', '') linktelstr,
-             
+
              -- 移动电话
              REPLACE(custinfo.mobileno, ' ', '') mobilestr,
-             
+
              -- 联系人
              REPLACE(nvl(custinfo.contanctmanname, custinfo.name), ' ', '') linkmanstr, -- 联系人，取得空格
-             
+
              NULL zipcodestr,
-             
+
              -- 客户联系地址，取 汇巨 系统内的客户关联的地址信息
              '辽宁省抚顺市' || p.fullname || m.murotonamestr contactaddrstr,
-             
+
              NULL detailaddrcodestr,
-             
+
              -- 注册日期，原系统中没有注册日期
              nvl(custinfo.startlifecycle,
                  to_date('20000101 10:10:10', 'yyyymmdd hh24:mi:ss')) enroldt,
-             
+
              decode(custinfo.genderid, 202, 0, 201, 1, NULL) sexstr,
-             
+
              NULL vacationid,
-             
+
              NULL birthdaydt,
-             
+
              NULL certenddt,
              NULL certregionaddrstr,
              NULL companytypestr,
-             
+
              -- 使用旧系统标识 记录SMS系统的客户编码
              TRIM(custinfo.optionalcode) oldsysid,
-             
+
              --社会类别
              custinfo.customerlevelid societyid,
              --运营区域：抚顺
@@ -704,7 +706,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              NULL                 createcodestr,
              NULL                 modifycodestr,
              NULL                 terminalid,
-             
+
              nvl(custinfo.startlifecycle,
                  to_date('20000101 10:10:10', 'yyyymmdd hh24:mi:ss')) createdt,
              NULL modifydt,
@@ -716,12 +718,12 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
          AND custinfo.murotoid = m.murotoid_pk /*
                      AND custinfo.code='300055284'*/
       ;
-  
+
   BEGIN
-  
+
     v_cnt     := 0;
     v_cnt_err := 0;
-  
+
     FOR v_customer IN c_customer LOOP
       BEGIN
         v_operareaid := transfer_dvb_utils_pkg.fun_get_basedata(v_customer.operareaid,
@@ -732,8 +734,8 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_customerid_fk   => v_customer.customerid_fk,
                                                                   p_customernamestr => v_customer.customernamestr,
                                                                   p_customercodestr => v_customer.customercodestr, -- 客户编码
-                                                                  p_custtypeid      => v_customer.customertypeid, -- 客户类型 
-                                                                  
+                                                                  p_custtypeid      => v_customer.customertypeid, -- 客户类型
+
                                                                   p_certificatetypeid => transfer_dvb_utils_pkg.fun_get_basedata(v_customer.certificatetypeid,
                                                                                                                                  '证件类型'), -- 证件类型,
                                                                   p_certcodestr       => v_customer.certcodestr, -- 证件号码
@@ -811,7 +813,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                  p_modifydt       => v_customer.modifydt,
                                                                  p_salechannelid1 => NULL,
                                                                  p_operareaid     => v_operareaid); -- 运营区域
-      
+
         -- 创建余额账本
         SELECT seq_acctbooken.nextval INTO v_acctbookid_pk FROM dual;
         v_result := transfer_dvb_insert_pkg.fun_insert_acctbooken(p_acctbookid_pk    => v_acctbookid_pk,
@@ -842,10 +844,10 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_customerid       => v_customerid, -- 客户标识
                                                                   p_objtypeid        => 1, -- 余额对象类型  1：账户
                                                                   p_objid            => v_accountid_pk); -- 帐户PK：余额对象
-      
+
         -- 创建支付方案
         SELECT seq_payprojecten.nextval INTO v_payprojectid_pk FROM dual;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_payprojecten(p_payprojectid_pk    => v_payprojectid_pk,
                                                                     p_paymethodid_pk     => 111, -- 付款类型  现金
                                                                     p_acctbookid_pk      => v_acctbookid_pk, -- 余额账本PK
@@ -873,7 +875,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         SELECT seq_acctbalanceobjen.nextval
           INTO v_accbalanceobjid_pk
           FROM dual;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_acctbalanceobjen(p_accbalanceobjid_pk => v_accbalanceobjid_pk,
                                                                         p_acctbookid_pk      => v_acctbookid_pk, -- 余额账本PK
                                                                         p_objtypeid          => 1, -- 余额账本隶属于帐户：1
@@ -894,7 +896,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         INSERT INTO muroto_custen
         VALUES
           (v_customer.murotoid, v_customerid);
-      
+
         v_cnt := v_cnt + 1;
         IF MOD(v_cnt, 10000) = 0 THEN
           COMMIT;
@@ -918,20 +920,20 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                    ' errors in transfer_dvb_load_pkg.load_customer_prc.');
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt ||
                                                    ' customer_indiv info loading finished.');
-  
+
   END;
   PROCEDURE load_deposit_prc IS
-  
+
     v_paymenten_pk paymenten.paymentid_pk%TYPE;
     v_deposit_pk   depositrecorden.depositrecordid_pk%TYPE;
-  
+
     v_cnt     NUMBER;
     v_cnt_err NUMBER;
     sql_code  VARCHAR2(50);
     sql_errm  VARCHAR2(1000);
-  
+
     CURSOR cur_payments IS
-    
+
       SELECT ac.accountid_pk,
              111 paymethodid_pk, --前台现金
              c.customerid_pk customerid_pk,
@@ -950,15 +952,15 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         FROM fsboss_cash_deposit_detail dp, customeren c, accounten ac
        WHERE c.addinfostr3 = dp.customerid
          AND ac.customerid_pk = c.customerid_pk;
-  
+
   BEGIN
-  
+
     v_cnt     := 0;
     v_cnt_err := 0;
-  
+
     FOR v_payments IN cur_payments LOOP
       BEGIN
-      
+
         SELECT seq_paymenten.nextval INTO v_paymenten_pk FROM dual;
         v_result := transfer_dvb_insert_pkg.fun_insert_paymenten(p_paymentid_pk        => v_paymenten_pk,
                                                                  p_accountid_pk        => v_payments.accountid_pk,
@@ -996,9 +998,9 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                  p_operareaid          => v_payments.operareaid,
                                                                  p_resourceid_pk       => NULL,
                                                                  p_developid           => NULL);
-      
+
         SELECT seq_depositrecorden.nextval INTO v_deposit_pk FROM dual;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_depositrecorden(p_depositrecordid_pk => v_deposit_pk,
                                                                        p_noteid_pk          => NULL,
                                                                        p_customerid_pk      => v_payments.customerid_pk,
@@ -1021,7 +1023,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                        p_modifydt           => NULL,
                                                                        p_salechannelid1     => transfer_dvb_utils_pkg.fun_get_basedata(v_payments.salechannelid1,
                                                                                                                                        '营销渠道'),
-                                                                       
+
                                                                        p_operareaid          => 1,
                                                                        p_depositsettlementid => NULL,
                                                                        p_productinstanceid   => NULL,
@@ -1029,7 +1031,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                        p_subscriberid        => NULL,
                                                                        p_priceplanid         => NULL,
                                                                        p_productid           => NULL
-                                                                       
+
                                                                        );
         v_cnt    := v_cnt + 1;
         IF MOD(v_cnt, 1000) = 0 THEN
@@ -1037,14 +1039,14 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
           transfer_dvb_log_pkg.transfer_log_prc(p_msg => v_cnt ||
                                                          ' phyresources instance have been loaded in transfer_dvb_load_pkg.load_deposit_prc.');
         END IF;
-      
+
       EXCEPTION
         WHEN OTHERS THEN
           sql_code := SQLCODE;
-        
+
           sql_errm  := SQLERRM;
           v_cnt_err := v_cnt_err + 1;
-        
+
           transfer_dvb_log_pkg.transfer_err_prc(p_sql_code => sql_code,
                                                 p_sql_errm => sql_errm,
                                                 p_calledby => 'transfer_dvb_load_pkg.load_deposit_prc',
@@ -1057,7 +1059,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                    ' errors in transfer_dvb_load_pkg.load_deposit_prc.');
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt ||
                                                    ' load_deposit_prc info loading finished.');
-  
+
   END;
   PROCEDURE load_subscriber_prc IS
     v_cnt              NUMBER;
@@ -1075,7 +1077,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     sql_code           VARCHAR2(50);
     sql_errm           VARCHAR2(1000);
     CURSOR c_subscriber IS
-    
+
       SELECT s.startlifecycle createdt, -- 创建日期
              s.statuschangedate modifydt,
              cus.operareaid operareaid, -- 运营区域
@@ -1144,9 +1146,9 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     v_mr_createid      := transfer_dvb_utils_pkg.fun_get_basedata('default',
                                                                   '默认操作员PK');
     FOR v_subscriber IN c_subscriber LOOP
-    
+
       BEGIN
-      
+
         -- 营销渠道，通过用户PK对应的操作员查找对应的营销渠道
         v_salechannelid := transfer_dvb_utils_pkg.fun_get_basedata(v_subscriber.addinfostr3,
                                                                    '营销渠道');
@@ -1154,9 +1156,9 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
           -- 如果没有查到对应的营销渠道，则取默认 营销渠道
           v_salechannelid := v_mr_salechannelid;
         END IF;
-      
+
         -- 确定用户类型
-      
+
         v_subscribertypeid := transfer_dvb_utils_pkg.fun_get_basedata(v_subscriber.subscriber_tpye,
                                                                       '用户类型');
         -- 初始化上次停断状态
@@ -1165,13 +1167,13 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         IF (v_subscriber.businessid = 2) THEN
           v_sub_status := transfer_dvb_utils_pkg.fun_get_basedata(v_subscriber.subscriber_status,
                                                                   '用户状态');
-        
+
           -- 如果是数字电视业务的罚停，则罚停日期取原系统中的计费截止日期
           IF (v_sub_status = 2 AND v_subscriber.businessid = 2) THEN
             v_laststopstatusid := v_sub_status;
             v_laststopdt       := v_subscriber.laststopdate;
           END IF;
-        
+
           -- 如果是数字电视业务的暂停，则暂停日期取原系统中的状态变更日期
           IF (v_sub_status = 1 AND v_subscriber.businessid = 2) THEN
             v_laststopstatusid := v_sub_status;
@@ -1179,7 +1181,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
           END IF;
           -- 匹配宽带用户状态
         ELSIF (v_subscriber.businessid = 3) THEN
-        
+
           --汇巨报表宽带正常用户
           --CASE WHEN pt.Code IN ('3601', '3602') and pd.endvalidfor >= sysdate THEN 1 ELSE 0 END) normal_count,
           IF ((v_subscriber.subscriber_status = 3601 OR
@@ -1199,7 +1201,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
             v_laststopstatusid := NULL;
             v_laststopdt       := NULL;
           END IF;
-        
+
           --汇巨报表宽带暂停用户
           --SUM(CASE WHEN pt.Code IN ('3604') THEN 1 ELSE 0 END) SUSPENDED_count
           IF (v_subscriber.subscriber_status = 3604) THEN
@@ -1207,32 +1209,32 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
             v_laststopstatusid := 1;
             v_laststopdt       := v_subscriber.lastchangedate;
           END IF;
-        
+
         ELSIF (v_subscriber.businessid = 1) THEN
-        
+
           --汇巨报表模拟正常
           -- SUM(CASE WHEN pt.Code IN ('3601', '3602')   THEN 1 ELSE 0 END) normal_count,
           IF (v_subscriber.subscriber_status = 3601 OR
              v_subscriber.subscriber_status = 3602) THEN
-            v_sub_status       := 0; --有效 
+            v_sub_status       := 0; --有效
             v_laststopstatusid := NULL;
             v_laststopdt       := NULL;
           END IF;
-        
+
           --汇巨报表模拟过期
           --SUM(CASE WHEN pt.Code IN ('3605', '3609', '3612')   THEN 1 ELSE 0 END) exp_count,
           IF (v_subscriber.subscriber_status = 3605 OR
              v_subscriber.subscriber_status = 3612) THEN
-            v_sub_status       := 2; --有效 
+            v_sub_status       := 2; --有效
             v_laststopstatusid := 2;
             v_laststopdt       := v_subscriber.lastchangedate;
           END IF;
-        
+
           --汇巨报表模拟暂停
           --SUM(CASE WHEN pt.Code IN ('3604') THEN 1 ELSE 0 END) SUSPENDED_count,
-        
+
           IF (v_subscriber.subscriber_status = 3604) THEN
-            v_sub_status       := 1; --有效 
+            v_sub_status       := 1; --有效
             v_laststopstatusid := 1;
             v_laststopdt       := v_subscriber.lastchangedate;
           END IF;
@@ -1241,11 +1243,11 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         IF (v_sub_status = 2 AND v_subscriber.seqstr > 1) THEN
           v_sub_status := 1;
         END IF;
-      
+
         SELECT seq_subscriberen.nextval INTO v_subscriberid_pk FROM dual;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_subscriberen(
-                                                                    
+
                                                                     p_createdt                => v_subscriber.createdt,
                                                                     p_modifydt                => v_subscriber.modifydt, --应该比较报停报通记录得到的最大受理日期
                                                                     p_salechannelid1          => v_salechannelid, --营销渠道,
@@ -1302,7 +1304,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
           transfer_dvb_log_pkg.transfer_log_prc(p_msg => v_cnt ||
                                                          ' subscribers have been loaded in TRANSFER_DVB_LOAD_PKG.load_subscriber_prc.');
         END IF;
-      
+
       EXCEPTION
         WHEN OTHERS THEN
           sql_code  := SQLCODE;
@@ -1322,7 +1324,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
               FROM subscriberen s
              WHERE s.customerid_pk = c.customerid_pk
                AND s.statusid IN (0, 1, 2));
-  
+
     COMMIT;
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt_err ||
                                                    ' errors in TRANSFER_DVB_LOAD_PKG.load_subscriber_prc.');
@@ -1331,7 +1333,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
   END;
 
   PROCEDURE load_logicalresource_prc IS
-  
+
   BEGIN
     INSERT INTO logicresourceen
       (logicresourceid_pk,
@@ -1360,7 +1362,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              '抚顺导库' || to_char(SYSDATE, 'yyyymmdd')
         FROM subscriberen s
        WHERE s.businessid = 3 -- 数据业务/*
-         AND s.authenticationtypeid_pk = 3 -- 认证类型 = Radius认证  */  
+         AND s.authenticationtypeid_pk = 3 -- 认证类型 = Radius认证  */
          AND s.statusid IN (0, 1, 2)
          AND NOT EXISTS
        (SELECT 'x'
@@ -1370,22 +1372,22 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
   END;
 
   PROCEDURE load_phyprod_instance_prc IS
-  
+
     v_instanceid_pk        instanceen.instanceid_pk%TYPE;
     v_subscriberaddonid_pk subscriberaddonen.subscriberaddonid_pk%TYPE;
     v_resourceid           NUMBER;
     v_equipt_type          NUMBER;
     v_productid            NUMBER;
     v_priceplanid          NUMBER;
-  
+
     v_cnt            NUMBER;
     v_cnt_err        NUMBER;
     v_priceplanid_pk priceplanen.priceplanid_pk%TYPE;
     sql_code         VARCHAR2(50);
     sql_errm         VARCHAR2(1000);
-  
+
     CURSOR cur_instance IS
-    
+
       SELECT pi.rescode rescode, -- 物理资源编码
              s.subscriberid_pk subscriberid_pk, -- 用户PK
              NULL packageinstanceid_pk,
@@ -1428,13 +1430,13 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         FROM subscriberen s, fsboss_phy_instance pi
        WHERE s.addinfostr4 = pi.terminalid;
   BEGIN
-  
+
     v_cnt     := 0;
     v_cnt_err := 0;
-  
+
     FOR c_instance IN cur_instance LOOP
       BEGIN
-      
+
         -- 开通设备
         v_equipt_type := NULL;
         IF (c_instance.equ_type = 1) THEN
@@ -1454,11 +1456,11 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                    c_instance.productid,
                                                                    '物理产品价格计划PK');
         END IF;
-      
+
         SELECT seq_instanceen.nextval INTO v_instanceid_pk FROM dual;
         v_result := transfer_dvb_insert_pkg.fun_insert_instanceen(
-                                                                  
-                                                                  p_instanceid_pk        => v_instanceid_pk, -- 产品实例PK                                                                 
+
+                                                                  p_instanceid_pk        => v_instanceid_pk, -- 产品实例PK
                                                                   p_subscriberid_pk      => c_instance.subscriberid_pk, -- 用户PK
                                                                   p_packageinstanceid_pk => c_instance.packageinstanceid_pk, -- 套餐产品实例标识
                                                                   p_operwayid            => c_instance.operwayid, -- 运营方式
@@ -1467,7 +1469,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_productchildtypeid   => c_instance.productchildtypeid, -- 产品子类：物理产品
                                                                   p_salewayid            => c_instance.salewayid, -- 销售方式：1  购买
                                                                   p_componentid          => c_instance.componentid, -- 包标识
-                                                                  p_packageid            => c_instance.packageid, -- 套餐标识 
+                                                                  p_packageid            => c_instance.packageid, -- 套餐标识
                                                                   p_subscriberstartdt    => c_instance.subscriberstartdt, -- 计费开始日期
                                                                   p_subscriberenddt      => c_instance.subscriberenddt, -- 取消订购时间 null
                                                                   p_billingflag          => c_instance.billingflag, -- 计费标识，是否计费  0：计费
@@ -1495,17 +1497,17 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_isunifiedcancelid    => c_instance.isunifiedcancelid,
                                                                   p_customerid_pk        => c_instance.customerid_pk -- 客户PK
                                                                   );
-      
+
         SELECT seq_subscriberaddonen.nextval
           INTO v_subscriberaddonid_pk
           FROM dual;
-      
+
         -- 通过资源编码和资源类型取得对应的物理资源标识
         IF c_instance.rescode IS NOT NULL THEN
           v_resourceid := transfer_dvb_utils_pkg.fun_get_resourceid_by_rescode(p_rescode => c_instance.rescode,
                                                                                p_restype => c_instance.equ_type);
         END IF;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_subscriberaddonen(p_subscriberaddonid_pk => v_subscriberaddonid_pk,
                                                                          p_subscriberid_pk      => c_instance.subscriberid_pk, -- 用户标识
                                                                          p_resourceid           => v_resourceid, -- 资源标识
@@ -1526,7 +1528,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                          p_salechannelid1       => c_instance.salechannel,
                                                                          p_operareaid           => c_instance.operareaid, -- 运营区域
                                                                          p_instanceid_pk        => v_instanceid_pk); -- 产品实例标识
-      
+
         INSERT INTO priceinstanceen
           (priceinstanceid_pk,
            instanceid_pk,
@@ -1541,21 +1543,21 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                  NULL,
                  1
             FROM dual;
-      
+
         v_cnt := v_cnt + 1;
         IF MOD(v_cnt, 10000) = 0 THEN
           COMMIT;
           transfer_dvb_log_pkg.transfer_log_prc(p_msg => v_cnt ||
                                                          ' phyresources instance have been loaded in transfer_dvb_load_pkg.load_phyprod_instance_prc.');
         END IF;
-      
+
       EXCEPTION
         WHEN OTHERS THEN
           sql_code := SQLCODE;
-        
+
           sql_errm  := SQLERRM;
           v_cnt_err := v_cnt_err + 1;
-        
+
           transfer_dvb_log_pkg.transfer_err_prc(p_sql_code => sql_code,
                                                 p_sql_errm => sql_errm,
                                                 p_calledby => 'transfer_dvb_load_pkg.load_phyprod_instance_prc',
@@ -1570,7 +1572,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                    ' errors in transfer_dvb_load_pkg.load_phyprod_instance_prc.');
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt ||
                                                    ' phyproduct instance info loading finished.');
-  
+
   END;
 
   PROCEDURE load_serprod_instance_prc IS
@@ -1588,7 +1590,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     v_cnt                  NUMBER;
     v_cnt_err              NUMBER;
     v_billingflag          number;
-  
+
     CURSOR cur_instance IS
       SELECT s.subscriberid_pk subscriberid_pk, -- 用户PK
              NULL packageinstanceid_pk,
@@ -1602,9 +1604,9 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              fsi.subscriberstartdt subscriberstartdt, -- 计费开始日期
              NULL subscriberenddt, -- 取消订购日期  禁用
              NULL iffullmonthid, -- 是否整月  禁用
-             fsi.rundt rundt, -- 开通日期  
-             fsi.enddt enddt, -- 计费截止日期 
-             fsi.mem mem, -- 取得套餐名称作为备注 
+             fsi.rundt rundt, -- 开通日期
+             fsi.enddt enddt, -- 计费截止日期
+             fsi.mem mem, -- 取得套餐名称作为备注
              NULL createid,
              NULL modifyid,
              NULL createcodestr,
@@ -1619,10 +1621,10 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              s.customerid_pk customerid_pk,
              decode(s.statusid, 0, 1, 2) service_ins_status, -- 服务实例的状态，用户状态为 0(有效) --> 1：有效  否则为 2：暂停
              c.societyid societyid, -- 社会类别
-             s.subscriberseqstr seqid, -- 终端号 
+             s.subscriberseqstr seqid, -- 终端号
              s.salechannelid1 salechannel, -- 营销渠道
              fsi.oldproname oldproname, -- 原系统产品名称
-             fsi.export_pro_type export_pro_type, -- 导库用产品类型 
+             fsi.export_pro_type export_pro_type, -- 导库用产品类型
              c.custtypeid custtypeid, --客户类型 0 个人，1集团
              s.statusid substatusid, --用户状态
              fsi.terminalid hugeterminalid
@@ -1631,28 +1633,28 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              fsboss_ser_instance fsi -- 服务产品实例临时表
        WHERE c.customerid_pk = s.customerid_pk
          AND fsi.terminalid = s.addinfostr4;
-  
+
     -- 取得某一个产品包含的服务PK
     CURSOR cur_service(p_productid NUMBER) IS
       SELECT sp.serviceid_pk serviceid_pk
         FROM service_producten sp
        WHERE sp.productid_pk = p_productid;
-  
+
   BEGIN
-  
+
     v_cnt     := 0;
     v_cnt_err := 0;
     FOR c_instance IN cur_instance LOOP
       BEGIN
-      
+
         -- 取得社会类别
         v_societyid  := c_instance.societyid; --社会类别
-        v_operareaid := c_instance.operareaid; --运营区域    
+        v_operareaid := c_instance.operareaid; --运营区域
         --获取服务产品对应的新产品pk
         v_productid_pk := transfer_dvb_utils_pkg.fun_get_basedata(c_instance.serviceproduct_id,
                                                                   '服务产品PK');
-        v_billingflag  := 0; -- 默认0 
-        -- 基本包                                                        
+        v_billingflag  := 0; -- 默认0
+        -- 基本包
         IF c_instance.export_pro_type = 1 THEN
           -- 个人客户
           IF c_instance.custtypeid = 0 THEN
@@ -1683,7 +1685,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                     (trunc(c_instance.enddt) -
                                      trunc(c_instance.laststopdt));
             END IF;
-          
+
             -- 集团客户，时段产品
           ELSE
             -- 时段产品， 不自动延续
@@ -1692,24 +1694,24 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
             v_serviceenddt := c_instance.laststopdt;
             ---获取服务产品相关的计费开始与计费截止日期
             v_instance_startdt := trunc(c_instance.subscriberstartdt);
-          
+
             v_instance_enddt := trunc(c_instance.enddt) + 1 - (1 / 86400);
             v_priceplanid    := transfer_dvb_utils_pkg.fun_get_basedata('default',
                                                                         '集团基本包价格计划PK');
           END IF;
-        
+
           -- 非基本包,时段产品
         ELSE
-        
+
           -- 时段产品， 不自动延续
           v_auto_continue := 0;
           -- 时段产品服务停断日期为用户上次停断时间
           v_serviceenddt := c_instance.laststopdt;
           ---获取服务产品相关的计费开始与计费截止日期
           v_instance_startdt := trunc(c_instance.subscriberstartdt);
-        
+
           v_instance_enddt := trunc(c_instance.enddt) + 1 - (1 / 86400);
-        
+
           --直接从价格计划表中取得id最小的价格计划
           SELECT MIN(pp.priceplanid_pk)
             INTO v_priceplanid
@@ -1718,7 +1720,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         END IF;
         SELECT seq_instanceen.nextval INTO v_instanceid_pk FROM dual;
         v_result := transfer_dvb_insert_pkg.fun_insert_instanceen(
-                                                                  
+
                                                                   p_instanceid_pk        => v_instanceid_pk, -- 产品实例PK
                                                                   p_subscriberid_pk      => c_instance.subscriberid_pk, -- 用户PK
                                                                   p_packageinstanceid_pk => c_instance.packageinstanceid_pk, -- 套餐实例PK null
@@ -1731,7 +1733,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_packageid            => c_instance.packageid, -- 套餐PK null
                                                                   p_subscriberstartdt    => v_instance_startdt, -- 计费开始日期
                                                                   p_subscriberenddt      => v_instance_enddt, -- 取消定购日期 null
-                                                                  p_billingflag          => v_billingflag, -- 计费标识 
+                                                                  p_billingflag          => v_billingflag, -- 计费标识
                                                                   p_iffullmonthid        => c_instance.iffullmonthid, -- 是否整月 null
                                                                   p_statusid             => 0, -- 产品实例状态 0：有效
                                                                   p_rundt                => c_instance.createdt, -- 开通时间
@@ -1755,15 +1757,15 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_packagetypeid        => NULL,
                                                                   p_isunifiedcancelid    => NULL,
                                                                   p_customerid_pk        => c_instance.customerid_pk);
-      
+
         -- 为产品实例创建服务实例
         FOR v_service IN cur_service(p_productid => v_productid_pk) LOOP
           BEGIN
-          
+
             SELECT seq_instanceserviceen.nextval
               INTO v_instanceserviceid_pk
               FROM dual;
-          
+
             v_result := transfer_dvb_insert_pkg.fun_insert_instanceserviceen(p_instanceid_pk        => v_instanceid_pk,
                                                                              p_serviceid_pk         => v_service.serviceid_pk,
                                                                              p_instanceserviceid_pk => v_instanceserviceid_pk,
@@ -1777,7 +1779,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                              p_salechannelid        => '',
                                                                              p_createdt             => c_instance.createdt,
                                                                              p_modifydt             => '');
-          
+
           EXCEPTION
             WHEN OTHERS THEN
               sql_code  := SQLCODE;
@@ -1788,11 +1790,11 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                     p_calledby => 'transfer_DVB_LOAD_PKG.load_serprod_instance_prc(intelnal)',
                                                     p_comments => c_instance.hugeterminalid,
                                                     p_custid   => NULL);
-            
+
           END;
-        
+
         END LOOP;
-      
+
         INSERT INTO priceinstanceen
           (priceinstanceid_pk,
            instanceid_pk,
@@ -1800,7 +1802,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
            startdt,
            enddt,
            ifvalid)
-        
+
           SELECT seq_priceinstanceen.nextval,
                  v_instanceid_pk,
                  v_priceplanid, -- 价格计划PK
@@ -1808,15 +1810,15 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                  NULL,
                  1
             FROM dual;
-      
+
         v_cnt := v_cnt + 1;
-      
+
         IF MOD(v_cnt, 10000) = 0 THEN
           COMMIT;
           transfer_dvb_log_pkg.transfer_log_prc(p_msg => v_cnt ||
                                                          ' serproducts have bean loaded in transfer_DVB_LOAD_PKG.load_serprod_instance_prc.');
         END IF;
-      
+
       EXCEPTION
         WHEN OTHERS THEN
           sql_code  := SQLCODE;
@@ -1835,10 +1837,10 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     COMMIT;
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt_err ||
                                                    ' errors in transfer_DVB_LOAD_PKG.load_serprod_instance_prc.');
-  
+
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt ||
                                                    ' service product info loading finished.');
-  
+
   END;
 
   PROCEDURE load_generate_bills IS
@@ -1861,7 +1863,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
     v_billingenddt    DATE;
     v_cnt             NUMBER;
     v_cnt_err         NUMBER;
-  
+
     -- 查询导库日到导库月月末到期的用户和产品实例
     CURSOR cur_get_ins IS
       SELECT s.customerid_pk,
@@ -1897,9 +1899,9 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
              i.subscriberstartdt > trunc(SYSDATE)
          AND -- 计费开始日期
              i.subscriberstartdt < to_date('2015-07-01', 'yyyy-mm-dd');
-  
+
   BEGIN
-  
+
     v_writeoff        := 24; -- 默认销账金额
     v_invoicecycid_pk := 1; -- 默认账期编码
     v_result          := 0;
@@ -1909,37 +1911,37 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
       INTO v_invoicecycid_pk
       FROM invoicecycen i
      WHERE invoicecycnamestr = to_char(SYSDATE, 'yyyymm');
-  
+
     SELECT trunc(last_day(SYSDATE) + 1) INTO v_billdate_2 FROM dual; -- 导库月下个月的第一天，用于计算残月
-  
+
     v_billingenddt := to_date(to_char(v_billdate_2 - 1, 'yyyy-mm-dd') ||
                               ' 23:59:59',
                               'yyyy-mm-dd HH24:MI:SS');
-  
+
     --生成综合帐单记录
     FOR v_get_ins IN cur_get_ins LOOP
       BEGIN
-      
+
         -- 取得每一个账单的计费起始日期
         v_billdate_1 := v_get_ins.subscriberstartdt;
-      
+
         -- 计算残月天数
         SELECT to_number(trunc(v_billdate_2 - v_billdate_1))
           INTO v_halfday_1
           FROM dual;
-      
+
         -- 计算整月天数
         v_monthday_1 := to_number(to_char(last_day(v_billdate_1), 'dd'));
-      
+
         --计算当月每日应收金额
         v_perdayfee := round(nvl(v_get_ins.ratesumid, 0) / v_monthday_1, 8);
-      
+
         --计算残月应收金额
         v_writeoff := round(v_perdayfee * v_halfday_1, 2);
-      
+
         -- 生成欠费用户
         SELECT seq_oweobjecten.nextval INTO v_oweobjectid_pk FROM dual;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_oweobjecten(p_oweobjectid_pk           => v_oweobjectid_pk,
                                                                    p_customerid               => v_get_ins.customerid_pk,
                                                                    p_accountid                => v_get_ins.defaultaccountid,
@@ -1952,7 +1954,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                    p_operwayid                => 1,
                                                                    p_treatstatusid            => 0, -- 欠费用户处理状态  0:欠费
                                                                    p_urgecountid              => 0, -- 催缴次数
-                                                                   p_lastedtimedt             => NULL, -- 最近处理日期 
+                                                                   p_lastedtimedt             => NULL, -- 最近处理日期
                                                                    p_mem                      => '导库欠费用户',
                                                                    p_statusid                 => 1,
                                                                    p_createid                 => NULL,
@@ -1969,10 +1971,10 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                    p_billids                  => NULL,
                                                                    p_billingeventid           => NULL,
                                                                    p_billingserviceinstanceid => NULL);
-      
+
         -- 生成欠费账单
         SELECT seq_billen.nextval INTO v_billid_pk FROM dual;
-      
+
         v_result := transfer_dvb_insert_pkg.fun_insert_billen(p_billid_pk           => v_billid_pk,
                                                               p_writeoffid          => NULL,
                                                               p_customerid          => v_get_ins.customerid_pk,
@@ -2011,22 +2013,22 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                               p_priceplanid         => v_get_ins.priceplanid_pk,
                                                               p_rateid              => v_get_ins.rateid_pk,
                                                               p_operitemid          => NULL,
-                                                              p_productid           => v_get_ins.productid, -- 产品编码 5：数字电视基本包                                       
+                                                              p_productid           => v_get_ins.productid, -- 产品编码 5：数字电视基本包
                                                               p_instanceid          => v_get_ins.instanceid_pk,
                                                               p_ifprinted           => 0,
                                                               p_packageinstanceid   => NULL, -- 所属套餐实例标识
                                                               p_discountnameliststr => NULL, --已使用优惠名称
                                                               p_refundstate         => 0 --退费状态 0：未退费
                                                               );
-      
+
         v_cnt := v_cnt + 1;
-      
+
         IF MOD(v_cnt, 1000) = 0 THEN
           COMMIT;
           transfer_dvb_log_pkg.transfer_log_prc(p_msg => v_cnt ||
                                                          ' bills have been generated in TRANSFER_DVB_LOAD_PKG.load_generate_bill.');
         END IF;
-      
+
       EXCEPTION
         WHEN OTHERS THEN
           sql_code  := SQLCODE;
@@ -2037,11 +2039,75 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                 p_calledby => 'TRANSFER_DVB_LOAD_PKG.load_generate_bills',
                                                 p_comments => v_get_ins.instanceid_pk,
                                                 p_custid   => NULL);
-        
+
       END;
     END LOOP;
     COMMIT;
   END;
 
 END transfer_dvb_load_pkg;
+
+
+PROCEDURE PRC_DEL_BAD_SEGMENT_ADDR
+ is
+  v_address_level_pk number;
+  v_address_fk number;
+  v_count number;
+
+  -- 获取地址级别，倒序排列
+  cursor c is
+    select al.addresslevelid_pk
+    from addresslevelen al
+    where al.statusid = 1
+    order by al.addresslevelid_pk desc;
+
+  -- 查找指定级别的所有地址，并且已经绑定了网格
+  cursor d(address_level_pk number) is
+    select a.addressid_fk
+     from addressen a
+    where a.addresslevelid_pk = address_level_pk
+        and a.statusid = 1
+        and a.segmentid_pk is not null
+    group by a.addressid_fk;
+begin
+  delete from temp_bad_segment_address;
+  commit;
+
+  for c1 in c loop
+      v_address_level_pk := c1.addresslevelid_pk;
+    for d1 in d(v_address_level_pk) loop
+        v_address_fk := d1.addressid_fk;
+        -- 查找当前地址的父级地址是否已经绑定了网格，
+        -- 如果已经绑定绑定网格则进行记录
+        select count(*) into v_count
+         from addressen aa
+         where aa.addressid_pk = v_address_fk
+           and aa.segmentid_pk is not null
+           and aa.statusid = 1
+           and not exists(
+               select 'x' from temp_bad_segment_address ba
+               where ba.address_pk = aa.addressid_pk
+           );
+
+        if v_count > 0 then
+           v_count := 0;
+           insert into temp_bad_segment_address(address_pk) values(v_address_fk);
+        end if;
+    end loop;
+  end loop;
+  commit;
+
+  delete from servicesegment_addressen sd
+  where sd.addressid_pk in (
+        select address_pk from temp_bad_segment_address
+  );
+
+  update addressen aaa set aaa.segmentid_pk = null
+   where aaa.addressid_pk in (
+        select address_pk from temp_bad_segment_address
+  );
+  commit;
+end PRC_DEL_BAD_SEGMENT_ADDR;
+
+
 /

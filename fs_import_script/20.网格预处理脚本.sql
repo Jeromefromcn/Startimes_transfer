@@ -18,3 +18,10 @@ SELECT a.id, a.employeeid
   FROM huiju.areas a
  WHERE a.endlifecycle =
        to_date('9999/12/31 23:59:59', 'yyyy/MM/dd hh24:mi:ss');
+
+       drop table TEMP_BAD_SEGMENT_ADDRESS;
+
+       create table TEMP_BAD_SEGMENT_ADDRESS
+       (
+         address_pk NUMBER
+       );
