@@ -1,0 +1,78 @@
+一、网格导入后，有一部分子地址已经绑定网格，并且父级地址也同时绑定了网格的数据，需要把
+   这部分父级地址解除网格绑定。
+
+
+1、创建临时表，保存将要被删除的父地址PK
+
+create table TEMP_BAD_SEGMENT_ADDRESS
+(
+  address_pk NUMBER
+);
+
+
+2、创建解除异常父地址和网格绑定关系的存储过程
+
+CREATE OR REPLACE PROCEDURE "PRC_DEL_BAD_SEGMENT_ADDR" --创建人描述
+ is
+  v_address_level_pk number;
+  v_address_fk number;
+  v_count number;
+  
+  -- 获取地址级别，倒序排列
+  cursor c is
+    select al.addresslevelid_pk 
+    from addresslevelen al 
+    where al.statusid = 1
+    order by al.addresslevelid_pk desc;
+
+  -- 查找指定级别的所有地址，并且已经绑定了网格
+  cursor d(address_level_pk number) is
+    select a.addressid_fk
+     from addressen a 
+    where a.addresslevelid_pk = address_level_pk
+        and a.statusid = 1
+        and a.segmentid_pk is not null
+    group by a.addressid_fk;
+begin
+  delete from temp_bad_segment_address;
+  commit;
+  
+  for c1 in c loop
+      v_address_level_pk := c1.addresslevelid_pk;
+    for d1 in d(v_address_level_pk) loop
+        v_address_fk := d1.addressid_fk;
+        -- 查找当前地址的父级地址是否已经绑定了网格，
+        -- 如果已经绑定绑定网格则进行记录
+        select count(*) into v_count
+         from addressen aa
+         where aa.addressid_pk = v_address_fk
+           and aa.segmentid_pk is not null
+           and aa.statusid = 1
+           and not exists(
+               select 'x' from temp_bad_segment_address ba
+               where ba.address_pk = aa.addressid_pk
+           );
+           
+        if v_count > 0 then
+           v_count := 0;
+           insert into temp_bad_segment_address(address_pk) values(v_address_fk);
+        end if;
+    end loop;
+  end loop;
+  commit;
+  
+  delete from servicesegment_addressen sd
+  where sd.addressid_pk in (
+        select address_pk from temp_bad_segment_address
+  );
+  
+  update addressen aaa set aaa.segmentid_pk = null
+   where aaa.addressid_pk in (
+        select address_pk from temp_bad_segment_address
+  );
+  commit;
+end PRC_DEL_BAD_SEGMENT_ADDR;
+
+3、执行存储过程
+
+exec PRC_DEL_BAD_SEGMENT_ADDR;
