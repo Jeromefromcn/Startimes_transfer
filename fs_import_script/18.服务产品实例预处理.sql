@@ -14,7 +14,7 @@ SELECT pd.terminalid,
        pd.startvalidfor subscriberstartdt, -- 计费开始日期
        0 billingflag, -- 产品是否计费， 0：计费 
        pd.startvalidfor rundt, -- 开通日期  
-       pd.endvalidfor enddt, -- 计费截止日期 
+       trunc(pd.endvalidfor) - 1 enddt, -- 计费截止日期 
        mk.name || '原产品:' || po.name || ';原优惠:' || pre.name mem, -- 取得套餐名称作为备注 
        to_date((to_char(pd.startvalidfor, 'yyyyMMdd') || '000000'),
                'yyyyMMddhh24miss') createdt,
@@ -46,7 +46,7 @@ SELECT pd.terminalid,
        pd.startvalidfor subscriberstartdt, -- 计费开始日期
        0 billingflag, -- 产品是否计费， 0：计费 
        pd.startvalidfor rundt, -- 开通日期            
-       pd.endvalidfor enddt, -- 计费截止日期 
+       trunc(pd.endvalidfor) - 1 enddt, -- 计费截止日期 
        mk.name || '原产品:' || pf.name || ';原优惠-' || pre.name mem,
        pd.startvalidfor createdt,
        pd.startvalidfor finishdt, -- 竣工日期，取产品的计费开始日期
@@ -72,7 +72,7 @@ SELECT pd.terminalid,
        pd.startvalidfor subscriberstartdt, -- 计费开始日期
        0 billingflag, -- 产品是否计费， 0：计费 
        pd.startvalidfor rundt, -- 开通日期            
-       pd.endvalidfor enddt, -- 计费截止日期 
+       trunc(pd.endvalidfor) - 1 enddt, -- 计费截止日期 
        mk.name || '原产品:' || pf.name || ';原优惠-' || pre.name mem,
        pd.startvalidfor createdt,
        pd.startvalidfor finishdt, -- 竣工日期，取产品的计费开始日期
@@ -99,7 +99,7 @@ SELECT pd.terminalid,
        pd.startvalidfor subscriberstartdt, -- 计费开始日期
        0 billingflag, -- 产品是否计费， 0：计费 
        pd.startvalidfor rundt, -- 开通日期            
-       pd.endvalidfor enddt, -- 计费截止日期 
+       trunc(pd.endvalidfor) - 1 enddt, -- 计费截止日期 
        '原产品:' || pd.name || ';原优惠-' || pre.name mem,
        pd.startvalidfor createdt,
        pd.startvalidfor finishdt, -- 竣工日期，取产品的计费开始日期

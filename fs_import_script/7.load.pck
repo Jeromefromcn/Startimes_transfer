@@ -1268,7 +1268,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                     p_detailaddrcodestr       => v_subscriber.detailaddrcodestr,
                                                                     p_endworkdt               => v_subscriber.endworkdt,
                                                                     p_subscribertypeid        => v_subscribertypeid,
-                                                                    p_pwdstr                  => v_subscriber.pwdstr,
+                                                                    p_pwdstr                  => '123456', -- default '123456'
                                                                     p_startdt                 => v_subscriber.startdt, --同竣工日期
                                                                     p_enddt                   => v_subscriber.enddt,
                                                                     p_contractid              => v_subscriber.contractid,
