@@ -1,0 +1,7 @@
+UPDATE resourcecataen r
+   SET r.accesspointid =
+       (SELECT a.accesspointid_pk
+          FROM accesspointen a
+         WHERE a.accesspointnamestr = '同方智能卡接入点'),
+       r.castypeid      = 202
+ WHERE r.resourcecatacodestr = '0001';
