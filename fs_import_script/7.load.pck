@@ -716,7 +716,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
         FROM fsboss_customer custinfo, fsboss_places p, murotoen m
        WHERE custinfo.managesectionid = p.id
          AND custinfo.murotoid = m.murotoid_pk /*
-                                             AND custinfo.code='300055284'*/
+                                                         AND custinfo.code='300055284'*/
       ;
   
   BEGIN
@@ -1326,6 +1326,26 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                AND s.statusid IN (0, 1, 2));
   
     COMMIT;
+  -- 增加数据业务开通记录 【待确定】
+    INSERT INTO dabopenstatusen dd
+      SELECT seq_dabopenstatusen.nextval,
+             s.servicestr,
+             0, -- 已经开户
+             s.subscriberid_pk,
+             SYSDATE,
+             NULL,
+             7, -- 开通设备 
+             seq_dabopenstatusen.currval,
+             NULL,
+             'OPEN_ACCOUNT'
+        FROM subscriberen s
+       WHERE s.businessid = 3
+         AND s.subscribertypeid = 1083
+         AND s.statusid <> 3;
+    COMMIT;
+    
+    -- 增加vod业务开通记录 【待确定】
+  
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt_err ||
                                                    ' errors in TRANSFER_DVB_LOAD_PKG.load_subscriber_prc.');
     transfer_dvb_log_pkg.transfer_log_prc(p_msg => 'total ' || v_cnt ||
