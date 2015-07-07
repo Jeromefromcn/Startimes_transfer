@@ -115,10 +115,7 @@ SELECT pd.*,
        3 type_of_service, -- 业务类型
        t.masterid masterid, -- 主终端标识
        t.terminalspecificationid terminalspecificationid, -- 终端类型标识，是否主终端
-       decode(t.terminalspecificationid,
-              9223372032954843176,
-              1,
-              t.serialnumber + 2) seqstr, -- 终端号
+       1, -- 终端号
        NULL accesspointid, -- 接入点id
        eu.organizationunit_id organizationunit_id, -- 受理渠道id
        '抚顺导库-宽带用户' mem,
@@ -155,10 +152,7 @@ SELECT pd.*,
        3 type_of_service, -- 业务类型
        t.masterid masterid, -- 主终端标识
        t.terminalspecificationid terminalspecificationid, -- 终端类型标识，是否主终端
-       decode(t.terminalspecificationid,
-              9223372032954843176,
-              1,
-              t.serialnumber + 2) seqstr, -- 终端号
+       1, -- 终端号
        NULL accesspointid, -- 接入点id
        eu.organizationunit_id organizationunit_id, -- 受理渠道id  
        '抚顺导库-宽带专网' mem,
