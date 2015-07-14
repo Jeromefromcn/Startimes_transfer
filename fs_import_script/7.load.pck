@@ -739,7 +739,7 @@ CREATE OR REPLACE PACKAGE BODY transfer_dvb_load_pkg IS
                                                                   p_certificatetypeid => transfer_dvb_utils_pkg.fun_get_basedata(v_customer.certificatetypeid,
                                                                                                                                  '证件类型'), -- 证件类型,
                                                                   p_certcodestr       => v_customer.certcodestr, -- 证件号码
-                                                                  p_linktelstr        => v_customer.linktelstr, -- 联系电话
+                                                                  p_linktelstr        => v_customer.mobilestr,-- 将手机作为联系电话 v_customer.linktelstr, -- 联系电话
                                                                   p_mobilestr         => v_customer.mobilestr, -- 手机
                                                                   p_customeraddrstr   => v_customer.customeraddrstr, -- 详细地址
                                                                   p_customerstatusid  => v_customer.customerstatusid, -- 客户状态
